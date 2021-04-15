@@ -1,7 +1,5 @@
-test*.*
 app.js
 block.js
-first_promise.js
 
 # Visual Studeio Code Editor
 /.vscode/*
