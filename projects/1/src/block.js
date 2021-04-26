@@ -18,7 +18,7 @@ class Block {
 	constructor(data){
 		this.hash = null;                                           // Hash of the block
 		this.height = 0;                                            // Block Height (consecutive number of each block)
-		this.body = Buffer(JSON.stringify(data)).toString('hex');   // Will contain the transactions stored in the block, by default it will encode the data
+		this.body = Buffer.from(JSON.stringify(data)).toString('hex');   // Will contain the transactions stored in the block, by default it will encode the data
 		this.time = 0;                                              // Timestamp for the Block creation
 		this.previousBlockHash = null;                              // Reference to the previous Block Hash
     }
@@ -26,7 +26,7 @@ class Block {
     /**
      *  validate() method will validate if the block has been tampered or not.
      *  Been tampered means that someone from outside the application tried to change
-     *  values in the block data as a consecuence the hash of the block should be different.
+     *  values in the block data as a consequence the hash of the block should be different.
      *  Steps:
      *  1. Return a new promise to allow the method be called asynchronous.
      *  2. Save the in auxiliary variable the current hash of the block (`this` represent the block object)
@@ -38,14 +38,24 @@ class Block {
     validate() {
         let self = this;
         return new Promise((resolve, reject) => {
-            // Save in auxiliary variable the current block hash
-                                            
-            // Recalculate the hash of the Block
-            // Comparing if the hashes changed
-            // Returning the Block is not valid
-            
-            // Returning the Block is valid
+            if (self.body) {
+                // Save in auxiliary variable the current block hash
+                const hash_stored = self.hash;
 
+                // Recalculate the hash of the Block
+                const hash_calculated = SHA256(self.body).toString();
+
+                // Comparing if the hashes changed
+                if (hash_stored === hash_calculated) {
+                    // Returning the Block is valid
+                    resolve(true);
+                } else {
+                    // Returning the Block is not valid
+                    reject(false);
+                    };
+            } else {
+                reject('ERROR: no data found in block.body');
+            };
         });
     }
 
@@ -59,14 +69,27 @@ class Block {
      *     or Reject with an error.
      */
     getBData() {
-        // Getting the encoded data saved in the Block
-        // Decoding the data to retrieve the JSON representation of the object
-        // Parse the data to an object to be retrieve.
+        let self = this;
+        return new Promise((resolve, reject) => {
+            if (self.body) {
+                // Getting the encoded data saved in the Block
+                // Decoding the data to retrieve the JSON representation of the object
+                const body_decoded_str = hex2ascii(self.body);
 
-        // Resolve with the data if the object isn't the Genesis block
+                // Parse the data to an object to be retrieve.
+                const body_object = JSON.parse(body_decoded_str)
 
+                // Resolve with the data if the object isn't the Genesis block
+                if (body_object.data !== 'Genesis Block') {
+                    resolve(body_object.data)
+                } else {
+                    reject('ERROR: this is the Genesis Block')
+                }
+            } else {
+                reject('ERROR: no data found in block.body');
+            }
+        })
     }
-
 }
 
 module.exports.Block = Block;                    // Exposing the Block class as a module
