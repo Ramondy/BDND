@@ -4,7 +4,7 @@
  *  It uses libraries like `crypto-js` to create the hashes for each block and `bitcoinjs-message` 
  *  to verify a message signature. The chain is stored in the array
  *  `this.chain = [];`. Of course each time you run the application the chain will be empty because and array
- *  isn't a persisten storage method.
+ *  isn't a persistent storage method.
  *  
  */
 
@@ -37,6 +37,7 @@ class Blockchain {
         if( this.height === -1){
             let block = new BlockClass.Block({data: 'Genesis Block'});
             await this._addBlock(block);
+            console.log('Genesis Block successfully added');
         }
     }
 
@@ -56,7 +57,7 @@ class Blockchain {
      * or reject if an error happen during the execution.
      * You will need to check for the height to assign the `previousBlockHash`,
      * assign the `timestamp` and the correct `height`...At the end you need to 
-     * create the `block hash` and push the block into the chain array. Don't for get 
+     * create the `block hash` and push the block into the chain array. Don't forget
      * to update the `this.height`
      * Note: the symbol `_` in the method name indicates in the javascript convention 
      * that this method is a private method. 
@@ -64,7 +65,25 @@ class Blockchain {
     _addBlock(block) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-           
+            try {
+                block.height = this.chain.length
+                block.time = new Date().getTime().toString().slice(0, -3)
+
+                if (this.chain.length > 0) {
+                    block.previousBlockHash = this.chain[this.chain.length - 1].hash
+                }
+
+                block.hash = SHA256(JSON.stringify(block)).toString()
+
+                this.chain.push(block)
+                this.height += 1
+
+                resolve()
+            } catch {
+                reject((e) => {
+                    console.log('ERROR: cannot add block', e)
+                })
+            }
         });
     }
 

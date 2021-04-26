@@ -2,3 +2,12 @@ Block.js :
 
 TEST : validate()
 TEST : getBData()
+
+blockchain.js :
+
+DONE : _addBlock()
+WRITE : requestMessageOwnershipVerification()
+WRITE : submitStar()
+WRITE : getBlockByHash()
+WRITE : getStarsByWalletAddress()
+WRITE : validateChain()
