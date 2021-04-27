@@ -125,7 +125,7 @@ class Blockchain {
             // check time interval
             const messageTimeSeconds = parseInt(message.split(':')[1]);
             const currentTimeSeconds = parseInt(new Date().getTime().toString().slice(0, -3));
-            const toleranceSeconds = 5 * 60
+            const toleranceSeconds = 60 * 60
 
             if (currentTimeSeconds - messageTimeSeconds <= toleranceSeconds) {
                 if (bitcoinMessage.verify(message, address, signature)) {
@@ -157,8 +157,12 @@ class Blockchain {
     getBlockByHash(hash) {
         let self = this;
         return new Promise((resolve, reject) => {
-           const result = this.chain.filter(block => block.hash === hash)[0];
-           resolve(result)
+           const block = self.chain.filter(block => block.hash === hash)[0];
+           if (block) {
+               resolve(result)
+           } else {
+               resolve(null);
+           }
         });
     }
 
@@ -189,7 +193,15 @@ class Blockchain {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
-            
+            self.chain.forEach(async block => {
+                const data = await block.getBData()
+                if (data) {
+                    if (data.address === address) {
+                        stars.push(data.star)
+                    }
+                }
+            });
+            resolve(stars);
         });
     }
 

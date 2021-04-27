@@ -79,12 +79,13 @@ class Block {
 
                 // Parse the data to an object to be retrieve.
                 const body_object = JSON.parse(body_decoded_str)
-                console.log(typeof body_object.data, body_object.data)
+                console.log(body_object)
+
                 // Resolve with the data if the object isn't the Genesis block
-                if (body_object.data !== 'Genesis Block') {
-                    resolve(body_object.data)
+                if (body_object.data === 'Genesis Block') {
+                    resolve()
                 } else {
-                    reject('ERROR: this is the Genesis Block')
+                    resolve(body_object)
                 }
             } else {
                 reject('ERROR: no data found in block.body');
