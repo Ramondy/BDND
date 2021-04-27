@@ -14,6 +14,6 @@ DONE : submitStar()
 3. signer le message via Bitcoin wallet
 4. copier la signature dans la requete suivante
 
-WRITE : getBlockByHash()
+DONE : getBlockByHash()
 WRITE : getStarsByWalletAddress()
 WRITE : validateChain()
