@@ -7,7 +7,13 @@ blockchain.js :
 
 DONE : _addBlock()
 DONE : requestMessageOwnershipVerification()
-WRITE : submitStar()
+DONE : submitStar()
+
+1. POST 127.0.0.1:8000/requestValidation {address:"..."}
+2. copier le message dans la requete suivante
+3. signer le message via Bitcoin wallet
+4. copier la signature dans la requete suivante
+
 WRITE : getBlockByHash()
 WRITE : getStarsByWalletAddress()
 WRITE : validateChain()

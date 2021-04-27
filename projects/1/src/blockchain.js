@@ -121,7 +121,30 @@ class Blockchain {
     submitStar(address, message, signature, star) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-            
+
+            // check time interval
+            const messageTimeSeconds = parseInt(message.split(':')[1]);
+            const currentTimeSeconds = parseInt(new Date().getTime().toString().slice(0, -3));
+            const toleranceSeconds = 5 * 60
+
+            if (currentTimeSeconds - messageTimeSeconds <= toleranceSeconds) {
+                if (bitcoinMessage.verify(message, address, signature)) {
+                    const data = {
+                        address: address,
+                        message: message,
+                        signature: signature,
+                        star: star
+                    }
+                    let newBlock = new BlockClass.Block(data)
+                    await self._addBlock(newBlock)
+                    resolve(newBlock)
+
+                } else {
+                    reject("ERROR: authentication error")
+                }
+            } else {
+                reject("ERROR: message is expired")
+            }
         });
     }
 
