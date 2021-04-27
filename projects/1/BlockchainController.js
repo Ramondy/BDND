@@ -26,7 +26,7 @@ class BlockchainController {
                 const height = parseInt(req.params.height);
                 let block = await this.blockchain.getBlockByHeight(height);
                 if(block){
-                    return res.status(200).json(block);
+                    return res.status(200).json(block)
                 } else {
                     return res.status(404).send("Block Not Found!");
                 }
@@ -54,7 +54,7 @@ class BlockchainController {
         });
     }
 
-    // Endpoint that allow Submit a Star, yu need first to `requestOwnership` to have the message (POST endpoint)
+    // Endpoint that allow Submit a Star, you need first to `requestOwnership` to have the message (POST endpoint)
     submitStar() {
         this.app.post("/submitstar", async (req, res) => {
             if(req.body.address && req.body.message && req.body.signature && req.body.star) {
@@ -114,10 +114,8 @@ class BlockchainController {
             } else {
                 return res.status(500).send("Block Not Found! Review the Parameters!");
             }
-            
         });
     }
-
 }
 
 module.exports = (app, blockchainObj) => { return new BlockchainController(app, blockchainObj);}

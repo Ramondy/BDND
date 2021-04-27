@@ -1,7 +1,7 @@
 Block.js :
 
-TEST : validate()
-TEST : getBData()
+DONE : validate()
+DONE : getBData()
 
 blockchain.js :
 

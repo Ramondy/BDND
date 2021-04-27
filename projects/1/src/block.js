@@ -36,14 +36,16 @@ class Block {
      *  Note: to access the class values inside a Promise code you need to create an auxiliary value `let self = this;`
      */
     validate() {
-        let self = this;
+        const blockClone = JSON.parse(JSON.stringify(this))
+
         return new Promise((resolve, reject) => {
-            if (self.body) {
+            if (blockClone.body) {
                 // Save in auxiliary variable the current block hash
-                const hash_stored = self.hash;
+                const hash_stored = blockClone.hash;
 
                 // Recalculate the hash of the Block
-                const hash_calculated = SHA256(self.body).toString();
+                blockClone.hash = null
+                const hash_calculated = SHA256(JSON.stringify(blockClone)).toString();
 
                 // Comparing if the hashes changed
                 if (hash_stored === hash_calculated) {
@@ -62,7 +64,6 @@ class Block {
     /**
      *  Auxiliary Method to return the block body (decoding the data)
      *  Steps:
-     *  
      *  1. Use hex2ascii module to decode the data
      *  2. Because data is a javascript object use JSON.parse(string) to get the Javascript Object
      *  3. Resolve with the data and make sure that you don't need to return the data for the `genesis block` 
@@ -78,7 +79,7 @@ class Block {
 
                 // Parse the data to an object to be retrieve.
                 const body_object = JSON.parse(body_decoded_str)
-
+                console.log(typeof body_object.data, body_object.data)
                 // Resolve with the data if the object isn't the Genesis block
                 if (body_object.data !== 'Genesis Block') {
                     resolve(body_object.data)
