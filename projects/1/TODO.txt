@@ -6,7 +6,7 @@ DONE : getBData()
 blockchain.js :
 
 DONE : _addBlock()
-WRITE : requestMessageOwnershipVerification()
+DONE : requestMessageOwnershipVerification()
 WRITE : submitStar()
 WRITE : getBlockByHash()
 WRITE : getStarsByWalletAddress()
