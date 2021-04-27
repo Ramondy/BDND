@@ -79,7 +79,7 @@ class Block {
 
                 // Parse the data to an object to be retrieve.
                 const body_object = JSON.parse(body_decoded_str)
-                console.log(body_object)
+                // console.log(body_object)
 
                 // Resolve with the data if the object isn't the Genesis block
                 if (body_object.data === 'Genesis Block') {

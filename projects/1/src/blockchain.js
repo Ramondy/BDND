@@ -214,11 +214,29 @@ class Blockchain {
     validateChain() {
         let self = this;
         let errorLog = [];
-        return new Promise(async (resolve, reject) => {
-            
+        return new Promise((resolve, reject) => {
+            for (let i=0; i<self.chain.length; i++) {
+                if (i === 0) {
+                    errorLog.push({   valid: `Block ${i} is valid` })
+                } else {
+                    let current_block = self.chain[i]
+                    let previous_block = self.chain[i-1]
+
+                    if (current_block.previousBlockHash === previous_block.hash) {
+                        const isValid = current_block.validate()
+                        if (!isValid) {
+                            errorLog.push({   error: `Block ${i} is invalid` })
+                        } else {
+                            errorLog.push({   valid: `Block ${i} is valid` })
+                        }
+                    } else {
+                        errorLog.push({   error: `Block ${i} is invalid` })
+                    }
+                }
+            }
+            resolve(errorLog);
         });
     }
-
 }
 
 module.exports.Blockchain = Blockchain;   
