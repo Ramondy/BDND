@@ -36,7 +36,8 @@ class Block {
      *  Note: to access the class values inside a Promise code you need to create an auxiliary value `let self = this;`
      */
     validate() {
-        const blockClone = JSON.parse(JSON.stringify(this))
+        // const blockClone = JSON.parse(JSON.stringify(this))
+        const blockClone = {...this};
 
         return new Promise((resolve, reject) => {
             if (blockClone.body) {

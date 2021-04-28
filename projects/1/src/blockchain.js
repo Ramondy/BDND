@@ -26,6 +26,7 @@ class Blockchain {
         this.chain = [];
         this.height = -1;
         this.initializeChain();
+        this.toleranceSeconds = 60 * (process.argv[2] || 5)
     }
 
     /**
@@ -75,10 +76,11 @@ class Blockchain {
 
                 block.hash = SHA256(JSON.stringify(block)).toString()
 
-                this.chain.push(block)
-                this.height += 1
-
-                resolve()
+                if (await block.validate()) {
+                    this.chain.push(block)
+                    this.height += 1
+                    resolve()
+                }
             } catch {
                 reject((e) => {
                     console.log('ERROR: cannot add block', e)
@@ -125,9 +127,8 @@ class Blockchain {
             // check time interval
             const messageTimeSeconds = parseInt(message.split(':')[1]);
             const currentTimeSeconds = parseInt(new Date().getTime().toString().slice(0, -3));
-            const toleranceSeconds = 60 * 60
 
-            if (currentTimeSeconds - messageTimeSeconds <= toleranceSeconds) {
+            if (currentTimeSeconds - messageTimeSeconds <= this.toleranceSeconds) {
                 if (bitcoinMessage.verify(message, address, signature)) {
                     const data = {
                         address: address,
@@ -159,7 +160,7 @@ class Blockchain {
         return new Promise((resolve, reject) => {
            const block = self.chain.filter(block => block.hash === hash)[0];
            if (block) {
-               resolve(result)
+               resolve(block)
            } else {
                resolve(null);
            }
@@ -197,7 +198,7 @@ class Blockchain {
                 const data = await block.getBData()
                 if (data) {
                     if (data.address === address) {
-                        stars.push(data.star)
+                        stars.push({"star": data.star, "owner": data.address})
                     }
                 }
             });
@@ -217,20 +218,20 @@ class Blockchain {
         return new Promise((resolve, reject) => {
             for (let i=0; i<self.chain.length; i++) {
                 if (i === 0) {
-                    errorLog.push({   valid: `Block ${i} is valid` })
+                    errorLog.push({valid: `Block ${i} is valid`})
                 } else {
                     let current_block = self.chain[i]
-                    let previous_block = self.chain[i-1]
+                    let previous_block = self.chain[i - 1]
 
                     if (current_block.previousBlockHash === previous_block.hash) {
                         const isValid = current_block.validate()
                         if (!isValid) {
-                            errorLog.push({   error: `Block ${i} is invalid` })
+                            errorLog.push({error: `Block ${i} is invalid`})
                         } else {
-                            errorLog.push({   valid: `Block ${i} is valid` })
+                            errorLog.push({valid: `Block ${i} is valid`})
                         }
                     } else {
-                        errorLog.push({   error: `Block ${i} is invalid` })
+                        errorLog.push({error: `Block ${i} is invalid`})
                     }
                 }
             }
