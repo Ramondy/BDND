@@ -13,12 +13,10 @@
 <body>
     <div>
         <h1>Ethereum Secret Messenger</h1>
+        <label>This site writes a secret message to the Ethereum blockchain!</label>
         <hr>
 
-        <label>This site writes a secret message to the Ethereum blockchain!</label>
-
         <input id="userInput" type="text">
-
         <button id="setMessageButton">Set secret message</button>
         <hr>
 
@@ -28,13 +26,14 @@
 
     <script type="text/javascript">
         // connect to a web3 provider
+        // const URL = "http://127.0.0.1:7545" // Ganache
+        const URL = "https://ropsten.infura.io/v3/89255d379fa54fa5937b1aa48d974a05" // Ropsten
 
         if (ethereum) {
             web3 = new Web3(ethereum)
+        } else {
+            web3 = new Web3(new Web3.providers.HttpProvider(URL))
         }
-        // } else {
-        //     web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:7545"))
-        // }
 
         function connect() {
             ethereum
@@ -53,14 +52,14 @@
         window.addEventListener('load', connect)
 
         // identify sender's address
-
         let sender = ""
         ethereum.request({ method: 'eth_accounts' }).then( data => {
-            sender = data[0]
+            sender = data[0];
+            console.log(`sending from: ${sender}`)
         })
 
 
-        // connect to the contract
+        // connect to the contract -- check contract address!!
         const ABI = [
             {
                 "constant": false,
@@ -91,16 +90,17 @@
                 "type": "function"
             }
         ]
-        const contractAddress = '0x2b69925BfeF06125F19a6167001d32E6e2e0583F'
+        // const contractAddress = '0x2b69925BfeF06125F19a6167001d32E6e2e0583F' // myGanache
+        const contractAddress = '0x66454A8D246dac040355BD38AB9306ec84CD9Bb5' // myRopsten
 
         const myContract = new web3.eth.Contract(ABI, contractAddress)
 
         // get results
 
-        let setButton = document.querySelector("#setMessageButton");
-        let input = document.querySelector("#userInput");
-        setButton.addEventListener("click", function() {
-            let msgObject = myContract.methods.setMessage(input.value)
+        let setMessageButton = document.querySelector("#setMessageButton");
+        let inputMessage = document.querySelector("#userInput");
+        setMessageButton.addEventListener("click", function() {
+            let msgObject = myContract.methods.setMessage(inputMessage.value)
             msgObject.send({from: sender})
                 .then(function (err, res) {
                     if (!err) {
@@ -111,10 +111,10 @@
                 })
         })
 
-        let getButton = document.querySelector("#getMessageButton")
+        let getMessageButton = document.querySelector("#getMessageButton")
         let output = document.querySelector("#secretMessageDisplay")
 
-        getButton.addEventListener("click", function() {
+        getMessageButton.addEventListener("click", function() {
             let secretMessage = myContract.methods.getMessage()
             secretMessage.call()
                 .then(data => {
