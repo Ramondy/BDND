@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang ='en'>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Deploy a Remix Contract</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+
+<body>
+    <div>
+        <h1>Ethereum Secret Messenger</h1>
+        <hr>
+
+        <label>This site writes a secret message to the Ethereum blockchain!</label>
+
+        <input id="userInput" type="text">
+
+        <button id="setMessageButton">Set secret message</button>
+        <hr>
+
+        <button id="getMessageButton">Get secret message</button>
+        <p id="secretMessageDisplay"></p>
+    </div>
+
+    <script type="text/javascript">
+        // connect to a web3 provider
+
+        if (ethereum) {
+            web3 = new Web3(ethereum)
+        }
+        // } else {
+        //     web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:7545"))
+        // }
+
+        function connect() {
+            ethereum
+                .request({ method: 'eth_requestAccounts' })
+                // .then(handleAccountsChanged)
+                .catch((error) => {
+                  if (error.code === 4001) {
+                    // EIP-1193 userRejectedRequest error
+                    console.log('Please connect to MetaMask.');
+                  } else {
+                    console.error(error);
+                  }
+                });
+        }
+
+        window.addEventListener('load', connect)
+
+        // identify sender's address
+
+        let sender = ""
+        ethereum.request({ method: 'eth_accounts' }).then( data => {
+            sender = data[0]
+        })
+
+
+        // connect to the contract
+        const ABI = [
+            {
+                "constant": false,
+                "inputs": [
+                    {
+                        "name": "x",
+                        "type": "string"
+                    }
+                ],
+                "name": "setMessage",
+                "outputs": [],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "getMessage",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ]
+        const contractAddress = '0x2b69925BfeF06125F19a6167001d32E6e2e0583F'
+
+        const myContract = new web3.eth.Contract(ABI, contractAddress)
+
+        // get results
+
+        let setButton = document.querySelector("#setMessageButton");
+        let input = document.querySelector("#userInput");
+        setButton.addEventListener("click", function() {
+            let msgObject = myContract.methods.setMessage(input.value)
+            msgObject.send({from: sender})
+                .then(function (err, res) {
+                    if (!err) {
+                        console.log(res);
+                    } else {
+                        console.log(err);
+                    }
+                })
+        })
+
+        let getButton = document.querySelector("#getMessageButton")
+        let output = document.querySelector("#secretMessageDisplay")
+
+        getButton.addEventListener("click", function() {
+            let secretMessage = myContract.methods.getMessage()
+            secretMessage.call()
+                .then(data => {
+                    output.innerHTML = data
+                })
+        })
+
+    </script>
+</body>
+</html>
