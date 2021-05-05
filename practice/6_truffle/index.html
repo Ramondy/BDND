@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang ='en'>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Deploy a Remix Contract</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+
+<body>
+    <div>
+        <h1>Ethereum Secret Messenger</h1>
+        <label>This site writes a secret message to the Ethereum blockchain!</label>
+        <hr>
+
+        <input id="userInput" type="text">
+        <button id="setMessageButton">Set secret message</button>
+        <hr>
+
+        <button id="getMessageButton">Get secret message</button>
+        <p id="secretMessageDisplay"></p>
+    </div>
+
+    <script type="text/javascript">
+        // connect to a web3 provider
+        const URL = "http://127.0.0.1:7545" // Ganache
+        // const URL = "https://ropsten.infura.io/v3/89255d379fa54fa5937b1aa48d974a05" // Ropsten
+
+        if (ethereum) {
+            web3 = new Web3(ethereum)
+        } else {
+            web3 = new Web3(new Web3.providers.HttpProvider(URL))
+        }
+
+        function connect() {
+            ethereum
+                .request({ method: 'eth_requestAccounts' })
+                // .then(handleAccountsChanged)
+                .catch((error) => {
+                  if (error.code === 4001) {
+                    // EIP-1193 userRejectedRequest error
+                    console.log('Please connect to MetaMask.');
+                  } else {
+                    console.error(error);
+                  }
+                });
+        }
+
+        window.addEventListener('load', connect)
+
+        // identify sender's address
+        let sender = ""
+        ethereum.request({ method: 'eth_accounts' }).then( data => {
+            sender = data[0];
+            console.log(`sending from: ${sender}`)
+        })
+
+
+        // connect to the contract -- check contract address!!
+        const ABI = [
+            {
+              "inputs": [],
+              "stateMutability": "nonpayable",
+              "type": "constructor"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "x",
+                  "type": "string"
+                }
+              ],
+              "name": "setMessage",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "getMessage",
+              "outputs": [
+                {
+                  "internalType": "string",
+                  "name": "",
+                  "type": "string"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        // const ABI = [
+        //     {
+        //         "constant": false,
+        //         "inputs": [
+        //             {
+        //                 "name": "x",
+        //                 "type": "string"
+        //             }
+        //         ],
+        //         "name": "setMessage",
+        //         "outputs": [],
+        //         "payable": false,
+        //         "stateMutability": "nonpayable",
+        //         "type": "function"
+        //     },
+        //     {
+        //         "constant": true,
+        //         "inputs": [],
+        //         "name": "getMessage",
+        //         "outputs": [
+        //             {
+        //                 "name": "",
+        //                 "type": "string"
+        //             }
+        //         ],
+        //         "payable": false,
+        //         "stateMutability": "view",
+        //         "type": "function"
+        //     }
+        // ]
+
+        const contractAddress = '0x8A5f2BF0683c55D33662f9993072fb4DA00a5B7b' // myGanache from truffle
+        // const contractAddress = '0x2b69925BfeF06125F19a6167001d32E6e2e0583F' // myGanache from Remix -- WORKS FINE
+        // const contractAddress = '0x66454A8D246dac040355BD38AB9306ec84CD9Bb5' // myRopsten
+
+        const myContract = new web3.eth.Contract(ABI, contractAddress)
+
+        // get results
+
+        let setMessageButton = document.querySelector("#setMessageButton");
+        let inputMessage = document.querySelector("#userInput");
+        setMessageButton.addEventListener("click", function() {
+            let msgObject = myContract.methods.setMessage(inputMessage.value)
+            msgObject.send({from: sender})
+                .then(function (err, res) {
+                    if (!err) {
+                        console.log(res);
+                    } else {
+                        console.log(err);
+                    }
+                })
+        })
+
+        let getMessageButton = document.querySelector("#getMessageButton")
+        let output = document.querySelector("#secretMessageDisplay")
+
+        getMessageButton.addEventListener("click", function() {
+            let secretMessage = myContract.methods.getMessage()
+            secretMessage.call()
+                .then(data => {
+                    output.innerHTML = data
+                })
+        })
+
+    </script>
+</body>
+</html>
