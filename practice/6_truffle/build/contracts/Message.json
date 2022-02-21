@@ -30,7 +30,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     }
   ],
   "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"getMessage\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"x\",\"type\":\"string\"}],\"name\":\"setMessage\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/C/Users/yanni/PycharmProjects/bdnd/practice/6_truffle/contracts/myMessage.sol\":\"Message\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/yanni/PycharmProjects/bdnd/practice/6_truffle/contracts/myMessage.sol\":{\"keccak256\":\"0x62425255c15bfec7db27aea13fc0a54e9751fb2989812880b43cb296779492a2\",\"urls\":[\"bzz-raw://e965f70fe414bc7aca9b9316d90325d6087f656c2259eb732819d29b3baccdd6\",\"dweb:/ipfs/QmZMkXCtryUwpuddH5kKFLfNLgK1UtB5JmCnaXJidbWYYM\"]}},\"version\":1}",
@@ -3577,9 +3578,17 @@
     "name": "solc",
     "version": "0.8.4+commit.c7e474f2.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "5777": {
+      "events": {},
+      "links": {},
+      "address": "0x97A2f0BCc43D05f181FBB2FCFE297285c2427D0A",
+      "transactionHash": "0x7cfe047f2ca708262031ef7be9a17b5dc76f0b46f0eada4f08bd7913dbd743a4"
+    }
+  },
   "schemaVersion": "3.4.0",
-  "updatedAt": "2021-05-05T14:38:02.346Z",
+  "updatedAt": "2022-02-21T15:56:42.976Z",
+  "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
     "methods": {},
