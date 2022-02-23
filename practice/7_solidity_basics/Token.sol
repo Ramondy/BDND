@@ -21,15 +21,15 @@ contract myToken is ERC20 {
     uint8 public constant decimals = 18;  // 18 is the most common number of decimal places
 
     // necessary variables to implement ERC-20:
-    uint _totalSupply; // store total supply
-    mapping (address => uint) balances; // keep track of each account's balance
-    mapping (address => mapping (address => uint)) allowances; // keep track of allowances granted by each account to other accounts
+    uint private _totalSupply; // store total supply
+    mapping (address => uint) private _balances; // keep track of each account's balance
+    mapping (address => mapping (address => uint)) private _allowances; // keep track of allowances granted by each account to other accounts
 
     // note: events are inherited from interface, no need to repeat code
 
     constructor(uint amount) public {
         _totalSupply = amount;
-        balances[msg.sender] = amount;
+        _balances[msg.sender] = amount;
     }
 
     // implement interface functions:
@@ -39,15 +39,15 @@ contract myToken is ERC20 {
     }
 
     // getter for individual balance
-    function balanceOf(address tokenOwner) public constant returns (uint balance) {
-        return balances[tokenOwner];
+    function balanceOf(address tokenOwner) public constant returns (uint) {
+        return _balances[tokenOwner];
     }
 
     // transfer from own account
-    function transfer(address to, uint tokens) public returns (bool success) {
-        if (balances[msg.sender] >= tokens) {
-            balances[msg.sender] -= tokens;
-            balances[to] += tokens;
+    function transfer(address to, uint tokens) public returns (bool) {
+        if (_balances[msg.sender] >= tokens) {
+            _balances[msg.sender] -= tokens;
+            _balances[to] += tokens;
             emit Transfer(msg.sender, to, tokens);
             return true;
         }
@@ -57,11 +57,11 @@ contract myToken is ERC20 {
     }
 
     // transfer from third-party account, subject to allowance
-    function transferFrom(address from, address to, uint tokens) external returns (bool success) {
-        if (balances[from] >= tokens && allowances[from][msg.sender] >= tokens) {
-            balances[from] -= tokens;
-            allowances[from][msg.sender] -= tokens;
-            balances[to] += tokens;
+    function transferFrom(address from, address to, uint tokens) public returns (bool) {
+        if (_balances[from] >= tokens && _allowances[from][msg.sender] >= tokens) {
+            _balances[from] -= tokens;
+            _allowances[from][msg.sender] -= tokens;
+            _balances[to] += tokens;
             emit Transfer(msg.sender, to, tokens);
             return true;
         }
@@ -71,14 +71,15 @@ contract myToken is ERC20 {
     }
 
     // approve allowance to a third-party spender
-    function approve(address spender, uint tokens) external returns (bool success) {
-        allowances[msg.sender][spender] = tokens;
+    function approve(address spender, uint tokens) public returns (bool) {
+        require(spender != address(0));
+
+        _allowances[msg.sender][spender] = tokens;
         emit Approval(msg.sender, spender, tokens);
         return true;
     }
 
-    function allowance(address tokenOwner, address spender) external constant returns (uint remaining) {
-        return allowances[tokenOwner][spender];
+    function allowance(address tokenOwner, address spender) public constant returns (uint) {
+        return _allowances[tokenOwner][spender];
     }
-
 }

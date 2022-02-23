@@ -1,3 +1,6 @@
+.secret.txt
+node_modules/*
+
 practice/*
 
 !practice/5*
@@ -8,5 +11,5 @@ practice/5*/index.js
 practice/5*/package*
 
 !practice/6*
-
 !practice/7*
+!practice/8*

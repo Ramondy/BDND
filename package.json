@@ -8,5 +8,10 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@metamask/eth-sig-util": "^4.0.0",
+    "@truffle/hdwallet-provider": "^2.0.3",
+    "openzeppelin-solidity": "^4.5.0"
+  }
 }
