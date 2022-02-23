@@ -11,5 +11,8 @@ practice/5*/index.js
 practice/5*/package*
 
 !practice/6*
+practice/6*/build/*
 !practice/7*
 !practice/8*
+practice/8*/build/*
+
