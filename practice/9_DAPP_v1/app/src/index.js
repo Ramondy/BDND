@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import metaCoinArtifact from "../../build/contracts/MetaCoin.json";
+import StarNotary from "../../build/contracts/StarNotary.json";
 
 const App = {
   web3: null,
@@ -12,23 +12,22 @@ const App = {
     try {
       // get contract instance
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = metaCoinArtifact.networks[networkId];
+      const deployedNetwork = StarNotary.networks[networkId];
       this.meta = new web3.eth.Contract(
-        metaCoinArtifact.abi,
+        StarNotary.abi,
         deployedNetwork.address,
       );
 
       // get accounts
       const accounts = await web3.eth.getAccounts();
       this.account = accounts[0];
-
-      this.refreshBalance();
+      console.log(accounts)
     } catch (error) {
       console.error("Could not connect to contract or chain.");
     }
   },
 
-  refreshBalance: async function() {
+/*  refreshBalance: async function() {
     const { getBalance } = this.meta.methods;
     const balance = await getBalance(this.account).call();
 
@@ -52,7 +51,32 @@ const App = {
   setStatus: function(message) {
     const status = document.getElementById("status");
     status.innerHTML = message;
+  },*/
+
+  getStarName: async function() {
+    const { starName } = this.meta.methods;
+    const response = await starName().call();
+    document.getElementById("name").innerHTML = response;
   },
+
+  getStarOwner: async function() {
+    const { starOwner } = this.meta.methods;
+    const response = await starOwner().call();
+    document.getElementById("owner").innerHTML = response;
+  },
+
+  claimStar: async function() {
+    const { claimStar, starOwner } = this.meta.methods;
+    await claimStar().send({from: this.account});
+    const response = await starOwner().call();
+    this.setStatus(response);
+  },
+
+  setStatus: function(message) {
+    document.getElementById("status").innerHTML = message;
+  }
+
+
 };
 
 window.App = App;

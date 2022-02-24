@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>MetaCoin | Truffle Webpack Demo w/ Frontend</title>
+    <title>StarNotary DAPP Frontend</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <script src="index.js"></script>
   </head>
   <style>
     input {
@@ -9,29 +11,24 @@
       margin-bottom: 12px;
     }
   </style>
+
   <body>
-    <h1>MetaCoin - Example Truffle Dapp</h1>
-    <p>You have <strong class="balance">loading...</strong> META</p>
+    <h1>StarNotary DAPP</h1>
+    <br><label for="name">Star Name:</label><h3 id="name">#Star Name#</h3>
+    <br><br><button onclick="App.getStarName()">get Star Name</button>
+    <hr>
+    <br><label for="owner">Star Owner:</label><h3 id ="owner">#Star Owner#</h3>
+    <br><br><button onclick="App.getStarOwner()">get Star Owner</button>
+    <br><br>
+    <hr>
+    <br>
 
-    <h1>Send MetaCoin</h1>
-
-    <label for="amount">Amount:</label>
-    <input type="text" id="amount" placeholder="e.g. 95" />
-
-    <label for="receiver">To address:</label>
-    <input
-      type="text"
-      id="receiver"
-      placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"
-    />
-
-    <button onclick="App.sendCoin()">Send MetaCoin</button>
-
-    <p id="status"></p>
-    <p>
-      <strong>Hint:</strong> open the browser developer console to view any
-      errors and warnings.
-    </p>
-    <script src="index.js"></script>
+    <h2>Claim Star</h2>
+    <br><br><button id="claimStar" onclick="App.claimStar()">Claim Star</button>
+    <br><br>
+    <br>
+    <hr>
+      <span id="status"></span>
+    <br>
   </body>
 </html>
