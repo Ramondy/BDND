@@ -15,4 +15,10 @@ practice/6*/build/*
 !practice/7*
 !practice/8*
 practice/8*/build/*
+!practice/9*
+practice/9*/app/node*
+practice/9*/build/*
+
+projects/2
+
 
