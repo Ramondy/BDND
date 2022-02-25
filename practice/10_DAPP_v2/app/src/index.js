@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import StarNotary from "../../build/contracts/StarNotary.json";
+import metaCoinArtifact from "../../build/contracts/MetaCoin.json";
 
 const App = {
   web3: null,
@@ -12,45 +12,47 @@ const App = {
     try {
       // get contract instance
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = StarNotary.networks[networkId];
+      const deployedNetwork = metaCoinArtifact.networks[networkId];
       this.meta = new web3.eth.Contract(
-        StarNotary.abi,
+        metaCoinArtifact.abi,
         deployedNetwork.address,
       );
 
       // get accounts
       const accounts = await web3.eth.getAccounts();
       this.account = accounts[0];
-      console.log(accounts)
+
+      this.refreshBalance();
     } catch (error) {
       console.error("Could not connect to contract or chain.");
     }
   },
 
-  getStarName: async function() {
-    const { starName } = this.meta.methods;
-    const response = await starName().call();
-    document.getElementById("name").innerHTML = response;
+  refreshBalance: async function() {
+    const { getBalance } = this.meta.methods;
+    const balance = await getBalance(this.account).call();
+
+    const balanceElement = document.getElementsByClassName("balance")[0];
+    balanceElement.innerHTML = balance;
   },
 
-  getStarOwner: async function() {
-    const { starOwner } = this.meta.methods;
-    const response = await starOwner().call();
-    document.getElementById("owner").innerHTML = response;
-  },
+  sendCoin: async function() {
+    const amount = parseInt(document.getElementById("amount").value);
+    const receiver = document.getElementById("receiver").value;
 
-  claimStar: async function() {
-    const { claimStar, starOwner } = this.meta.methods;
-    await claimStar().send({from: this.account});
-    const response = await starOwner().call();
-    this.setStatus(response);
+    this.setStatus("Initiating transaction... (please wait)");
+
+    const { sendCoin } = this.meta.methods;
+    await sendCoin(receiver, amount).send({ from: this.account });
+
+    this.setStatus("Transaction complete!");
+    this.refreshBalance();
   },
 
   setStatus: function(message) {
-    document.getElementById("status").innerHTML = message;
-  }
-
-
+    const status = document.getElementById("status");
+    status.innerHTML = message;
+  },
 };
 
 window.App = App;
