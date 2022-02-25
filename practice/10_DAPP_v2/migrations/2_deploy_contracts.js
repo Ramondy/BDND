@@ -1,8 +1,5 @@
-const ConvertLib = artifacts.require("ConvertLib");
-const MetaCoin = artifacts.require("MetaCoin");
+const StarNotary2 = artifacts.require("StarNotary2");
 
 module.exports = function(deployer) {
-  deployer.deploy(ConvertLib);
-  deployer.link(ConvertLib, MetaCoin);
-  deployer.deploy(MetaCoin);
+  deployer.deploy(StarNotary2, "StarsForStars", "STARZ");
 };
