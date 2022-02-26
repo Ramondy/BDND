@@ -5,7 +5,7 @@ let accounts;
 contract('StarNotary2', async (accs) => {
         accounts = accs;});
 
-/*it('can create star', async() => {
+it('can create star', async() => {
     let instance = await StarNotary2.deployed();
     let starName = "testStar";
     let tokenId = 1;
@@ -26,7 +26,7 @@ it('accepts offer star for sale', async () => {
     await instance.offerStarForSale(tokenId, starPrice, {from: starCreator});
     assert.equal(await instance.starsForSale.call(tokenId), starPrice)
 
-});*/
+});
 
 it('lets user1 get the funds after the sale', async() => {
     let instance = await StarNotary2.deployed();
