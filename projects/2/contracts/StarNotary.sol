@@ -74,25 +74,25 @@ contract StarNotary is ERC721 {
         //3. Get the owner of the two tokens (ownerOf(_tokenId1), ownerOf(_tokenId2)
         //4. Use _transferFrom function to exchange the tokens.
 
-        if (msg.sender == ownerOf(_tokenId1) && msg.sender == ownerOf(_tokenId2)) {
-            revert("The message sender must NOT own both tokens.");
-        }
-
         address operator_ad = msg.sender;
         uint operator_tk;
         address counterpart_ad;
         uint counterpart_tk;
 
+        require(msg.sender == ownerOf(_tokenId1) || msg.sender == ownerOf(_tokenId2), "The message sender must own one of the tokens.");
+
+        if (msg.sender == ownerOf(_tokenId1) && msg.sender == ownerOf(_tokenId2)) {
+            revert("The message sender must NOT own both tokens.");
+        }
+
         if (operator_ad == ownerOf(_tokenId1)) {
             operator_tk = _tokenId1;
             counterpart_ad = ownerOf(_tokenId2);
             counterpart_tk = _tokenId2;
-        } else if (operator_ad == ownerOf(_tokenId2)) {
+        } else {
             operator_tk = _tokenId2;
             counterpart_ad = ownerOf(_tokenId1);
             counterpart_tk = _tokenId1;
-        } else {
-            revert("The message sender must own one of the tokens.");
         }
 
         _transferFrom(operator_ad, counterpart_ad, operator_tk);
@@ -104,6 +104,10 @@ contract StarNotary is ERC721 {
     function transferStar(address _to1, uint256 _tokenId) public {
         //1. Check if the sender is the ownerOf(_tokenId)
         //2. Use the transferFrom(from, to, tokenId); function to transfer the Star
+
+        require(msg.sender == ownerOf(_tokenId), "The message sender must own the tokens.");
+        transferFrom(msg.sender, _to1, _tokenId);
+
     }
 
 }
