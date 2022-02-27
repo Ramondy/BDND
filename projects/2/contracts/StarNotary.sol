@@ -14,7 +14,14 @@ contract StarNotary is ERC721 {
     // Implement Task 1 Add a name and symbol properties
     // name: Is a short name to your token
     // symbol: Is a short string like 'USD' -> 'American Dollar'
-    
+
+    string public tokenName;
+    string public tokenSymbol;
+
+    constructor(string memory name_, string memory symbol_) public {
+        tokenName = name_;
+        tokenSymbol = symbol_;
+    }
 
     // mapping the Star with the Owner Address
     mapping(uint256 => Star) public tokenIdToStarInfo;
@@ -57,6 +64,7 @@ contract StarNotary is ERC721 {
     // Implement Task 1 lookUptokenIdToStarInfo
     function lookUptokenIdToStarInfo (uint _tokenId) public view returns (string memory) {
         //1. You should return the Star saved in tokenIdToStarInfo mapping
+        return tokenIdToStarInfo[_tokenId].name;
     }
 
     // Implement Task 1 Exchange Stars function
@@ -65,12 +73,41 @@ contract StarNotary is ERC721 {
         //2. You don't have to check for the price of the token (star)
         //3. Get the owner of the two tokens (ownerOf(_tokenId1), ownerOf(_tokenId2)
         //4. Use _transferFrom function to exchange the tokens.
+
+        address operator_ad = msg.sender;
+        uint operator_tk;
+        address counterpart_ad;
+        uint counterpart_tk;
+
+        require(msg.sender == ownerOf(_tokenId1) || msg.sender == ownerOf(_tokenId2), "The message sender must own one of the tokens.");
+
+        if (msg.sender == ownerOf(_tokenId1) && msg.sender == ownerOf(_tokenId2)) {
+            revert("The message sender must NOT own both tokens.");
+        }
+
+        if (operator_ad == ownerOf(_tokenId1)) {
+            operator_tk = _tokenId1;
+            counterpart_ad = ownerOf(_tokenId2);
+            counterpart_tk = _tokenId2;
+        } else {
+            operator_tk = _tokenId2;
+            counterpart_ad = ownerOf(_tokenId1);
+            counterpart_tk = _tokenId1;
+        }
+
+        _transferFrom(operator_ad, counterpart_ad, operator_tk);
+        _transferFrom(counterpart_ad, operator_ad, counterpart_tk);
+
     }
 
     // Implement Task 1 Transfer Stars
     function transferStar(address _to1, uint256 _tokenId) public {
         //1. Check if the sender is the ownerOf(_tokenId)
         //2. Use the transferFrom(from, to, tokenId); function to transfer the Star
+
+        require(msg.sender == ownerOf(_tokenId), "The message sender must own the tokens.");
+        transferFrom(msg.sender, _to1, _tokenId);
+
     }
 
 }
