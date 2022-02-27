@@ -41,21 +41,9 @@ const App = {
 
   // Implement Task 4 Modify the front end of the DAPP
   lookUp: async function (){
-    const { lookUptokenIdToStarInfo } = this.meta.methods;
-    const id = document.getElementById("lookid").value;
-    const response = await lookUptokenIdToStarInfo(id).call();
-    App.setStatus('Star Name is ' + response + '.');
-  },
-
-  // just for fun
-  transferStar: async function (){
-    const { transferStar, ownerOf } = this.meta.methods;
-    const to = document.getElementById("transferAd").value;
-    const id = document.getElementById("transferId").value;
-    await transferStar(to, id).send({from: this.account});
-    const newOwner = await ownerOf(id).call();
-    App.setStatus("New Star Owner is " + newOwner + ".");
+    
   }
+
 };
 
 window.App = App;

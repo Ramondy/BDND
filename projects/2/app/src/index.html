@@ -3,7 +3,6 @@
   <head>
     <title>StarNotary DAPP</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <script src="index.js"></script>
   </head>
   <style>
     input {
@@ -19,24 +18,18 @@
     <br>
       <h1>Create a Star</h1>
       <br><label for="starName">Star Name:</label><input type="text" id="starName"></input>
-      <label for="starId">Star ID:</label><input type="text" id="starId"></input>
-      <button id="createStar" onclick="App.createStar()">Create Star</button>
+      <br><label for="starId">Star ID:</label><input type="text" id="starId"></input>
+      <br><br><button id="createStar" onclick="App.createStar()">Create Star</button>
       <br>
       <hr>
       <br>
       <h1>Look up a Star</h1>
-      <br><label for="lookid">Star ID:</label><input type="text" id="lookid"></input>
-      <button onclick="App.lookUp()">Look Up a Star</button>
+      <br><label for="name">Star ID:</label><input type="text" id="lookid"></input>
+      <br><br><button onclick="App.lookUp()">Look Up a Star</button>
       <hr>
       <br>
       <span id="status"></span>
       <br>
-      <hr>
-      <br>
-      <h1>Transfer a Star</h1>
-      <label for="transferAd">Transfer to Address:</label><input type="text" id="transferAd"></input>
-      <label for="transferId">Star ID:</label><input type="text" id="transferId"></input>
-      <button onclick="App.transferStar()">Transfer a Star</button>
-
+    <script src="index.js"></script>
   </body>
 </html>
