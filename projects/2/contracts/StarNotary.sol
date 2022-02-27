@@ -74,19 +74,25 @@ contract StarNotary is ERC721 {
         //3. Get the owner of the two tokens (ownerOf(_tokenId1), ownerOf(_tokenId2)
         //4. Use _transferFrom function to exchange the tokens.
 
+        if (msg.sender == ownerOf(_tokenId1) && msg.sender == ownerOf(_tokenId2)) {
+            revert("The message sender must NOT own both tokens.");
+        }
+
         address operator_ad = msg.sender;
         uint operator_tk;
         address counterpart_ad;
         uint counterpart_tk;
 
-        if (ownerOf(_tokenId1) == operator_ad) {
+        if (operator_ad == ownerOf(_tokenId1)) {
             operator_tk = _tokenId1;
             counterpart_ad = ownerOf(_tokenId2);
             counterpart_tk = _tokenId2;
-        } else {
+        } else if (operator_ad == ownerOf(_tokenId2)) {
             operator_tk = _tokenId2;
             counterpart_ad = ownerOf(_tokenId1);
             counterpart_tk = _tokenId1;
+        } else {
+            revert("The message sender must own one of the tokens.");
         }
 
         _transferFrom(operator_ad, counterpart_ad, operator_tk);
