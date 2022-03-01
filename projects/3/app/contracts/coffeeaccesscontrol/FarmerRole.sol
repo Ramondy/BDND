@@ -4,7 +4,7 @@ pragma solidity >=0.4.24;
 import "./Roles.sol";
 
 // Define a contract 'FarmerRole' to manage this role - add, remove, check
-contract FarmerRole {
+abstract contract FarmerRole {
   using Roles for Roles.Role;
 
   // Define 2 events, one for Adding, and other for Removing
@@ -15,7 +15,7 @@ contract FarmerRole {
   Roles.Role private farmers;
 
   // In the constructor make the address that deploys this contract the 1st farmer
-  constructor() public {
+  constructor() {
     _addFarmer(msg.sender);
   }
 

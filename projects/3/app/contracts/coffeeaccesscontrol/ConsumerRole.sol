@@ -4,7 +4,7 @@ pragma solidity >=0.4.24;
 import "./Roles.sol";
 
 // Define a contract 'ConsumerRole' to manage this role - add, remove, check
-contract ConsumerRole {
+abstract contract ConsumerRole {
 
   // Define 2 events, one for Adding, and other for Removing
   event CustomerAdded(address account);
@@ -15,7 +15,7 @@ contract ConsumerRole {
 
   // In the constructor make the address that deploys this contract the 1st consumer
   constructor() public {
-    addConsumer(msg.sender);
+    _addConsumer(msg.sender);
   }
 
   // Define a modifier that checks to see if msg.sender has the appropriate role
@@ -32,22 +32,22 @@ contract ConsumerRole {
   // Define a function 'addConsumer' that adds this role
   function addConsumer(address account) public onlyConsumer {
     _addConsumer(account);
-    emit CustomerAdded(account);
   }
 
   // Define a function 'renounceConsumer' to renounce this role
   function renounceConsumer() public onlyConsumer {
     _removeConsumer(msg.sender);
-    emit CustomerRemoved(msg.sender);
   }
 
   // Define an internal function '_addConsumer' to add this role, called by 'addConsumer'
   function _addConsumer(address account) internal {
     Roles.add(consumers, account);
+    emit CustomerAdded(account);
   }
 
   // Define an internal function '_removeConsumer' to remove this role, called by 'removeConsumer'
   function _removeConsumer(address account) internal {
     Roles.remove(consumers, account);
+    emit CustomerRemoved(msg.sender);
   }
 }
