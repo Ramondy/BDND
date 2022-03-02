@@ -4,7 +4,7 @@ pragma solidity ^0.8.1;
 import "./Roles.sol";
 
 // Define a contract 'DistributorRole' to manage this role - add, remove, check
-abstract contract DistributorRole {
+contract DistributorRole {
 
   // Define 2 events, one for Adding, and other for Removing
   event DistributorAdded(address account);

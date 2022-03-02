@@ -1,7 +1,7 @@
 pragma solidity ^0.8.1;
 
 /// Provides basic authorization control
-abstract contract Ownable {
+contract Ownable {
     address internal owner;
 
     // Define an Event
