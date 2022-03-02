@@ -187,7 +187,7 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
     // Update the appropriate fields
     items[_sku].itemState = State.Processed;
     // Emit the appropriate event
-    emit Harvested(_sku);
+    emit Processed(_sku);
   }
 
   // Define a function 'packItem' that allows a farmer to mark an item 'Packed'
@@ -331,7 +331,6 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
     // Assign values to the 9 parameters
   itemSKU = items[_sku].sku;
   itemUPC = items[_sku].upc;
-  //productID,
   productNotes = items[_sku].productNotes;
   productPrice = items[_sku].productPrice;
   itemState = uint(items[_sku].itemState);

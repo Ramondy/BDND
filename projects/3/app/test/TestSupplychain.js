@@ -40,36 +40,23 @@ contract('SupplyChain', function(accounts) {
 
     it("Testing contract construction", async() => {
         const supplyChain = await SupplyChain.deployed();
-        assert.equal(await supplyChain.getOwner(), ownerID);
-        assert.equal(await supplyChain.isFarmer(ownerID), true);
-        assert.equal(await supplyChain.isDistributor(ownerID), true);
-        assert.equal(await supplyChain.isRetailer(ownerID), true);
-        assert.equal(await supplyChain.isConsumer(ownerID), true);
-    },
+        assert.equal(await supplyChain.getOwner(), ownerID, 'Error: Missing or Invalid ownerID');
+        assert.equal(await supplyChain.isFarmer(ownerID), true, 'Error: Owner is not a Farmer');
+        assert.equal(await supplyChain.isDistributor(ownerID), true, 'Error: Owner is not a Distributor');
+        assert.equal(await supplyChain.isRetailer(ownerID), true, 'Error: Owner is not a Retailer');
+        assert.equal(await supplyChain.isConsumer(ownerID), true, 'Error: Owner is not a Consumer');
+    }),
 
-    it("Testing smart contract function harvestItem() that allows a farmer to harvest coffee", async() => {
+    it("Testing harvestItem() that allows a farmer to harvest coffee", async() => {
         const supplyChain = await SupplyChain.deployed()
-        
-        // Declare and Initialize a variable for event
-        //var eventEmitted = false
-        
-        // Watch the emitted event Harvested()
-        // var event = supplyChain.Harvested()
-        // await event.watch((err, res) => {
-        //     eventEmitted = true
-        // })
-        // await supplyChain.events.Harvested({}, (err, res) => {
-        //     eventEmitted = true;
-        // })
-
 
         // Mark an item as Harvested by calling function harvestItem()
         await supplyChain.addFarmer(originFarmerID, {from: ownerID});
         let tx = await supplyChain.harvestItem(upc, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes, {from: originFarmerID})
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
-        const resultBufferOne = await supplyChain.fetchItemBufferOne.call(upc)
-        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+        const resultBufferOne = await supplyChain.fetchItemBufferOne.call(sku)
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku)
 
         // Verify the result set
         assert.equal(resultBufferOne[0], sku, 'Error: Invalid item SKU')
@@ -80,14 +67,28 @@ contract('SupplyChain', function(accounts) {
         assert.equal(resultBufferOne[5], originFarmInformation, 'Error: Missing or Invalid originFarmInformation')
         assert.equal(resultBufferOne[6], originFarmLatitude, 'Error: Missing or Invalid originFarmLatitude')
         assert.equal(resultBufferOne[7], originFarmLongitude, 'Error: Missing or Invalid originFarmLongitude')
-        assert.equal(resultBufferTwo[5], 0, 'Error: Invalid item State')
-        //assert.equal(eventEmitted, true, 'Invalid event emitted')
+        assert.equal(resultBufferTwo[4], 0, 'Error: Invalid item State')
         truffleAssert.eventEmitted(tx, 'Harvested');
-    })    
+    }),
 
+    it("Testing processItem() that allows a farmer to process coffee", async() => {
+        const supplyChain = await SupplyChain.deployed();
 
+        // check contract globals and item state before running test
+        assert.equal(await supplyChain.isFarmer(originFarmerID), true, 'Error: originFarmerID is not a Farmer');
+        assert.equal(sku, 1);
 
-)
+        let resultBufferOne = await supplyChain.fetchItemBufferOne.call(sku);
+        let resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferOne[3], originFarmerID, 'Error: Missing or Invalid originFarmerID');
+        assert.equal(resultBufferTwo[4], 0, 'Error: Invalid item State');
+
+        let tx = await supplyChain.processItem(sku, {from: originFarmerID});
+
+        resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferTwo[4], 1, 'Error: Invalid item State');
+        truffleAssert.eventEmitted(tx, 'Processed');
+    })
 
 });
 
