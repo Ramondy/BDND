@@ -13,10 +13,10 @@ contract('SupplyChain', function(accounts) {
     const originFarmInformation = "Yarray Valley"
     const originFarmLatitude = "-38.239770"
     const originFarmLongitude = "144.341490"
-    var productID = sku + upc
+    //var productID = sku + upc
     const productNotes = "Best beans for Espresso"
-    const productPrice = web3.utils.toWei("1", "ether")
-    var itemState = 0
+    const productPrice = web3.utils.toWei(".01", "ether")
+    //var itemState = 0
     const distributorID = accounts[2]
     const retailerID = accounts[3]
     const consumerID = accounts[4]
@@ -24,16 +24,11 @@ contract('SupplyChain', function(accounts) {
 
     ///Available Accounts
     ///==================
-    ///(0) 0x27d8d15cbc94527cadf5ec14b69519ae23288b95
-    ///(1) 0x018c2dabef4904ecbd7118350a0c54dbeae3549a
-    ///(2) 0xce5144391b4ab80668965f2cc4f2cc102380ef0a
-    ///(3) 0x460c31107dd048e34971e57da2f99f659add4f02
-    ///(4) 0xd37b7b8c62be2fdde8daa9816483aebdbd356088
-    ///(5) 0x27f184bdc0e7a931b507ddd689d76dba10514bcb
-    ///(6) 0xfe0df793060c49edca5ac9c104dd8e3375349978
-    ///(7) 0xbd58a85c96cc6727859d853086fe8560bc137632
-    ///(8) 0xe07b5ee5f738b2f87f88b99aac9c64ff1e0c7917
-    ///(9) 0xbd3ff2e3aded055244d66544c9c059fa0851da44
+    ///(0) 0xc45Da0fe8d39B3246bDe23CdA5d5bE1Ab2ae5d78
+    ///(1) 0x998a415188e717444878D05aF7Bd5a7c6ce38FBA
+    ///(2) 0xa8617D57a85b33ac21dA0d188CAb432ACC5C8843
+    ///(3) 0x799ed67FF48FAC96D57029319a1220abd72E5dCA
+    ///(4) 0xe073Fe1D0b5dDd039eeF085C70d583EBe516350D
 
     console.log("ganache-cli accounts used here...")
     console.log("Contract Owner: accounts[0] ", accounts[0])
@@ -42,7 +37,16 @@ contract('SupplyChain', function(accounts) {
     console.log("Retailer: accounts[3] ", accounts[3])
     console.log("Consumer: accounts[4] ", accounts[4])
 
-    // 1st Test
+
+    it("Testing contract construction", async() => {
+        const supplyChain = await SupplyChain.deployed();
+        assert.equal(await supplyChain.getOwner(), ownerID);
+        assert.equal(await supplyChain.isFarmer(ownerID), true);
+        assert.equal(await supplyChain.isDistributor(ownerID), true);
+        assert.equal(await supplyChain.isRetailer(ownerID), true);
+        assert.equal(await supplyChain.isConsumer(ownerID), true);
+    },
+
     it("Testing smart contract function harvestItem() that allows a farmer to harvest coffee", async() => {
         const supplyChain = await SupplyChain.deployed()
         
@@ -60,7 +64,8 @@ contract('SupplyChain', function(accounts) {
 
 
         // Mark an item as Harvested by calling function harvestItem()
-        let tx = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        await supplyChain.addFarmer(originFarmerID, {from: ownerID});
+        let tx = await supplyChain.harvestItem(upc, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes, {from: originFarmerID})
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
         const resultBufferOne = await supplyChain.fetchItemBufferOne.call(upc)
@@ -81,6 +86,8 @@ contract('SupplyChain', function(accounts) {
     })    
 
 
+
+)
 
 });
 
