@@ -50,8 +50,10 @@ contract('SupplyChain', function(accounts) {
     it("Testing harvestItem() that allows a farmer to harvest coffee", async() => {
         const supplyChain = await SupplyChain.deployed()
 
-        // Mark an item as Harvested by calling function harvestItem()
+        // assign necessary role
         await supplyChain.addFarmer(originFarmerID, {from: ownerID});
+
+        // Mark an item as Harvested by calling function harvestItem()
         let tx = await supplyChain.harvestItem(upc, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes, {from: originFarmerID})
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
@@ -83,6 +85,7 @@ contract('SupplyChain', function(accounts) {
         assert.equal(resultBufferOne[3], originFarmerID, 'Error: Missing or Invalid originFarmerID');
         assert.equal(resultBufferTwo[4], 0, 'Error: Invalid item State');
 
+        // run function and tests
         let tx = await supplyChain.processItem(sku, {from: originFarmerID});
 
         resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
@@ -97,11 +100,10 @@ contract('SupplyChain', function(accounts) {
         assert.equal(await supplyChain.isFarmer(originFarmerID), true, 'Error: originFarmerID is not a Farmer');
         assert.equal(sku, 1);
 
-        let resultBufferOne = await supplyChain.fetchItemBufferOne.call(sku);
         let resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
-        assert.equal(resultBufferOne[3], originFarmerID, 'Error: Missing or Invalid originFarmerID');
         assert.equal(resultBufferTwo[4], 1, 'Error: Invalid item State');
 
+        // run function and tests
         let tx = await supplyChain.packItem(sku, {from: originFarmerID});
 
         resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
@@ -116,17 +118,107 @@ contract('SupplyChain', function(accounts) {
         assert.equal(await supplyChain.isFarmer(originFarmerID), true, 'Error: originFarmerID is not a Farmer');
         assert.equal(sku, 1);
 
-        let resultBufferOne = await supplyChain.fetchItemBufferOne.call(sku);
         let resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
-        assert.equal(resultBufferOne[3], originFarmerID, 'Error: Missing or Invalid originFarmerID');
         assert.equal(resultBufferTwo[4], 2, 'Error: Invalid item State');
 
+        // run function and tests
         let tx = await supplyChain.sellItem(sku, productPrice, {from: originFarmerID});
 
         resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
         assert.equal(resultBufferTwo[3], productPrice, 'Error: Invalid price');
         assert.equal(resultBufferTwo[4], 3, 'Error: Invalid item State');
         truffleAssert.eventEmitted(tx, 'ForSale');
+    }),
+
+        it("Testing buyItem() that allows a distributor to buy coffee", async() => {
+        const supplyChain = await SupplyChain.deployed();
+
+        // assign necessary role
+        await supplyChain.addDistributor(distributorID, {from: ownerID});
+
+        // check contract globals and item state before running test
+        assert.equal(await supplyChain.isDistributor(distributorID), true, 'Error: distributorID is not a Distributor');
+        assert.equal(sku, 1);
+
+        let resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferTwo[4], 3, 'Error: Invalid item State');
+
+        // run function and tests
+        let tx = await supplyChain.buyItem(sku, {value: productPrice,from: distributorID});
+
+        let resultBufferOne = await supplyChain.fetchItemBufferOne.call(sku);
+        resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferOne[2], distributorID, 'Error: Invalid ownerID')
+        assert.equal(resultBufferTwo[5], distributorID, 'Error: Invalid distributorID');
+        assert.equal(resultBufferTwo[4], 4, 'Error: Invalid item State');
+        truffleAssert.eventEmitted(tx, 'Sold');
+    }),
+
+        it("Testing shipItem() that allows a distributor to ship coffee", async() => {
+        const supplyChain = await SupplyChain.deployed();
+
+        // check contract globals and item state before running test
+        assert.equal(await supplyChain.isDistributor(distributorID), true, 'Error: distributorID is not a Distributor');
+        assert.equal(sku, 1);
+
+        let resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferTwo[5], distributorID, 'Error: Missing or Invalid distributorID');
+        assert.equal(resultBufferTwo[4], 4, 'Error: Invalid item State');
+
+        // run function and tests
+        let tx = await supplyChain.shipItem(sku, {from: distributorID});
+
+        resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferTwo[4], 5, 'Error: Invalid item State');
+        truffleAssert.eventEmitted(tx, 'Shipped');
+    }),
+
+        it("Testing receiveItem() that allows a retailer to receive coffee", async() => {
+        const supplyChain = await SupplyChain.deployed();
+
+        // assign necessary role
+        await supplyChain.addRetailer(retailerID, {from: ownerID});
+
+        // check contract globals and item state before running test
+        assert.equal(await supplyChain.isRetailer(retailerID), true, 'Error: retailerID is not a Retailer');
+        assert.equal(sku, 1);
+
+        let resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferTwo[4], 5, 'Error: Invalid item State');
+
+        // run function and tests
+        let tx = await supplyChain.receiveItem(sku, {from: retailerID});
+
+        let resultBufferOne = await supplyChain.fetchItemBufferOne.call(sku);
+        resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferOne[2], retailerID, 'Error: Invalid ownerID')
+        assert.equal(resultBufferTwo[6], retailerID, 'Error: Invalid retailerID');
+        assert.equal(resultBufferTwo[4], 6, 'Error: Invalid item State');
+        truffleAssert.eventEmitted(tx, 'Received');
+    }),
+
+        it("Testing purchaseItem() that allows a consumer to purchase coffee", async() => {
+        const supplyChain = await SupplyChain.deployed();
+
+        // assign necessary role
+        await supplyChain.addConsumer(consumerID, {from: ownerID});
+
+        // check contract globals and item state before running test
+        assert.equal(await supplyChain.isConsumer(consumerID), true, 'Error: consumerID is not a Consumer');
+        assert.equal(sku, 1);
+
+        let resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferTwo[4], 6, 'Error: Invalid item State');
+
+        // run function and tests
+        let tx = await supplyChain.purchaseItem(sku, {from: consumerID});
+
+        let resultBufferOne = await supplyChain.fetchItemBufferOne.call(sku);
+        resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferOne[2], consumerID, 'Error: Invalid ownerID')
+        assert.equal(resultBufferTwo[7], consumerID, 'Error: Invalid retailerID');
+        assert.equal(resultBufferTwo[4], 7, 'Error: Invalid item State');
+        truffleAssert.eventEmitted(tx, 'Purchased');
     })
 
 });
