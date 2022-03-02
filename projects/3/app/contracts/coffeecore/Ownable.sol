@@ -1,20 +1,20 @@
-pragma solidity >=0.4.24;
+pragma solidity ^0.8.1;
 
 /// Provides basic authorization control
 abstract contract Ownable {
-    address private owner;
+    address internal owner;
 
     // Define an Event
     event TransferOwnership(address indexed oldOwner, address indexed newOwner);
 
     /// Assign the contract to an owner
-    constructor () internal {
+    constructor () {
         owner = msg.sender;
         emit TransferOwnership(address(0), owner);
     }
 
     /// Look up the address of the owner
-    function owner() public view returns (address) {
+    function getOwner() public view returns (address) {
         return owner;
     }
 

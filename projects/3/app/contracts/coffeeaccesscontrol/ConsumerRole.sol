@@ -1,4 +1,4 @@
-pragma solidity >=0.4.24;
+pragma solidity ^0.8.1;
 
 // Import the library 'Roles'
 import "./Roles.sol";
@@ -14,7 +14,7 @@ abstract contract ConsumerRole {
   Roles.Role consumers;
 
   // In the constructor make the address that deploys this contract the 1st consumer
-  constructor() public {
+  constructor() {
     _addConsumer(msg.sender);
   }
 

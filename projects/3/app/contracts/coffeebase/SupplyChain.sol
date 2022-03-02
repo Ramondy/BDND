@@ -1,10 +1,10 @@
-pragma solidity >=0.4.24;
+pragma solidity ^0.8.1;
 
-import "..\..\contracts\coffeeaccesscontrol\DistributorRole.sol";
-import "..\..\contracts\coffeeaccesscontrol\FarmerRole.sol";
-import "..\..\contracts\coffeeaccesscontrol\RetailerRole.sol";
-import "..\..\contracts\coffeeaccesscontrol\ConsumerRole.sol";
-import "..\..\contracts\coffeecore\Ownable.sol";
+import "../coffeeaccesscontrol/DistributorRole.sol";
+import "../coffeeaccesscontrol/FarmerRole.sol";
+import "../coffeeaccesscontrol/RetailerRole.sol";
+import "../coffeeaccesscontrol/ConsumerRole.sol";
+import "../coffeecore/Ownable.sol";
 
 // Define a contract 'Supplychain'
 contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, ConsumerRole {
@@ -146,7 +146,7 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
 
   // Define a function 'kill' if required
   function kill() onlyOwner public {
-    selfdestruct(owner());
+    selfdestruct(payable(owner));
   }
 
   function calculateChange(uint _sku) internal returns (uint change) {
@@ -161,7 +161,7 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
     newItem.upc = _upc;
     newItem.sku = sku;
     //newItem.productID = "
-    newItem.ownerID = msg.sender;
+    newItem.ownerID = payable(msg.sender);
     newItem.originFarmerID = msg.sender;
     newItem.originFarmName = _originFarmName;
     newItem.originFarmInformation = _originFarmInformation;

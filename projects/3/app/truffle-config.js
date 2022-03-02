@@ -5,5 +5,11 @@ module.exports = {
       port: 9545, //changed YR to match truffle develop default
       network_id: "*" // Match any network id
     }
+  },
+
+  compilers: {
+    solc: {
+      version: "0.8.1",
+    }
   }
 };
