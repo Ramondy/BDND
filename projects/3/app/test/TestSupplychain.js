@@ -88,6 +88,45 @@ contract('SupplyChain', function(accounts) {
         resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
         assert.equal(resultBufferTwo[4], 1, 'Error: Invalid item State');
         truffleAssert.eventEmitted(tx, 'Processed');
+    }),
+
+        it("Testing packItem() that allows a farmer to pack coffee", async() => {
+        const supplyChain = await SupplyChain.deployed();
+
+        // check contract globals and item state before running test
+        assert.equal(await supplyChain.isFarmer(originFarmerID), true, 'Error: originFarmerID is not a Farmer');
+        assert.equal(sku, 1);
+
+        let resultBufferOne = await supplyChain.fetchItemBufferOne.call(sku);
+        let resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferOne[3], originFarmerID, 'Error: Missing or Invalid originFarmerID');
+        assert.equal(resultBufferTwo[4], 1, 'Error: Invalid item State');
+
+        let tx = await supplyChain.packItem(sku, {from: originFarmerID});
+
+        resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferTwo[4], 2, 'Error: Invalid item State');
+        truffleAssert.eventEmitted(tx, 'Packed');
+    }),
+
+        it("Testing sellItem() that allows a farmer to sell coffee", async() => {
+        const supplyChain = await SupplyChain.deployed();
+
+        // check contract globals and item state before running test
+        assert.equal(await supplyChain.isFarmer(originFarmerID), true, 'Error: originFarmerID is not a Farmer');
+        assert.equal(sku, 1);
+
+        let resultBufferOne = await supplyChain.fetchItemBufferOne.call(sku);
+        let resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferOne[3], originFarmerID, 'Error: Missing or Invalid originFarmerID');
+        assert.equal(resultBufferTwo[4], 2, 'Error: Invalid item State');
+
+        let tx = await supplyChain.sellItem(sku, productPrice, {from: originFarmerID});
+
+        resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(sku);
+        assert.equal(resultBufferTwo[3], productPrice, 'Error: Invalid price');
+        assert.equal(resultBufferTwo[4], 3, 'Error: Invalid item State');
+        truffleAssert.eventEmitted(tx, 'ForSale');
     })
 
 });
