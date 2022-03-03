@@ -1,10 +1,9 @@
 .github
-build
 
-app/node_modules
+app/build
 app/contracts - base
+app/node_modules
 app/UML/*.lnk
-app/*.docx
 
 TODO.txt
 
