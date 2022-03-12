@@ -21,12 +21,9 @@ contract FlightSuretyData {
     * @dev Constructor
     *      The deploying account becomes contractOwner
     */
-    constructor
-                                (
-                                ) 
-                                public 
-    {
+    constructor () public {
         contractOwner = msg.sender;
+        operational = true;
     }
 
     /********************************************************************************************/
@@ -65,11 +62,7 @@ contract FlightSuretyData {
     *
     * @return A bool that is the current operating status
     */      
-    function isOperational() 
-                            public 
-                            view 
-                            returns(bool) 
-    {
+    function isOperational() public view returns(bool) {
         return operational;
     }
 
@@ -79,13 +72,8 @@ contract FlightSuretyData {
     *
     * When operational mode is disabled, all write transactions except for this one will fail
     */    
-    function setOperatingStatus
-                            (
-                                bool mode
-                            ) 
-                            external
-                            requireContractOwner 
-    {
+    function setOperatingStatus(bool mode) external requireContractOwner {
+        require(mode != operational, "New mode must be different from existing mode");
         operational = mode;
     }
 

@@ -19,7 +19,9 @@ contract FlightSuretyApp {
     uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
-    address private contractOwner;          // Account used to deploy contract
+    address private contractOwner;
+
+    FlightSuretyData_int dataContract;
 
     struct Flight {
         bool isRegistered;
@@ -28,8 +30,6 @@ contract FlightSuretyApp {
         address airline;
     }
     mapping(bytes32 => Flight) private flights;
-
-    bool private operational;
 
  
     /********************************************************************************************/
@@ -43,7 +43,7 @@ contract FlightSuretyApp {
     */
     modifier requireIsOperational() 
     {
-        require(operational, "Contract is currently not operational");
+        require(dataContract.isOperational(), "Contract is currently not operational");
         _;
     }
 
@@ -63,9 +63,9 @@ contract FlightSuretyApp {
     /**
     * @dev Contract constructor
     */
-    constructor () public {
+    constructor (address dataContractAddress) public {
         contractOwner = msg.sender;
-        operational = true;
+        dataContract = FlightSuretyData_int(dataContractAddress);
     }
 
     /********************************************************************************************/
@@ -73,7 +73,7 @@ contract FlightSuretyApp {
     /********************************************************************************************/
 
     function isOperational() public view returns(bool) {
-        return operational;
+        return dataContract.isOperational();
     }
 
     // Returns array of three non-duplicating integers from 0-9
@@ -112,14 +112,6 @@ contract FlightSuretyApp {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
-    /**
-    * @dev Change operating status
-    */
-    function setOperatingStatus(bool status) external requireContractOwner {
-        require(status != operational, "New mode must be different from existing mode");
-        operational = status;
-    }
-  
    /**
     * @dev Add an airline to the registration queue
     */   
@@ -281,9 +273,9 @@ contract FlightSuretyApp {
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
-
-
-
 // endregion
+}
 
-}   
+contract FlightSuretyData_int {
+    function isOperational() public view returns(bool);
+}
