@@ -1,16 +1,11 @@
 pragma solidity ^0.4.25;
 
-// It's important to avoid vulnerabilities due to numeric overflow bugs
-// OpenZeppelin's SafeMath library, when used correctly, protects agains such bugs
 // More info: https://www.nccgroup.trust/us/about-us/newsroom-and-events/blog/2018/november/smart-contract-insecurity-bad-arithmetic/
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-/************************************************** */
-/* FlightSurety Smart Contract                      */
-/************************************************** */
 contract FlightSuretyApp {
-    using SafeMath for uint256; // Allow SafeMath functions to be called for all uint256 types (similar to "prototype" in Javascript)
+    using SafeMath for uint256;
 
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
@@ -34,13 +29,12 @@ contract FlightSuretyApp {
     }
     mapping(bytes32 => Flight) private flights;
 
+    bool private operational;
+
  
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
     /********************************************************************************************/
-
-    // Modifiers help avoid duplication of code. They are typically used to validate something
-    // before a function is allowed to be executed.
 
     /**
     * @dev Modifier that requires the "operational" boolean variable to be "true"
@@ -49,9 +43,8 @@ contract FlightSuretyApp {
     */
     modifier requireIsOperational() 
     {
-         // Modify to call data contract's status
-        require(true, "Contract is currently not operational");  
-        _;  // All modifiers require an "_" which indicates where the function body will be added
+        require(operational, "Contract is currently not operational");
+        _;
     }
 
     /**
@@ -69,95 +62,94 @@ contract FlightSuretyApp {
 
     /**
     * @dev Contract constructor
-    *
     */
-    constructor
-                                (
-                                ) 
-                                public 
-    {
+    constructor () public {
         contractOwner = msg.sender;
+        operational = true;
     }
 
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
 
-    function isOperational() 
-                            public 
-                            pure 
-                            returns(bool) 
-    {
-        return true;  // Modify to call data contract's status
+    function isOperational() public view returns(bool) {
+        return operational;
+    }
+
+    // Returns array of three non-duplicating integers from 0-9
+    function generateIndexes(address account) internal returns (uint8[3]) {
+        uint8[3] memory indexes;
+        indexes[0] = getRandomIndex(account);
+
+        indexes[1] = indexes[0];
+        while(indexes[1] == indexes[0]) {
+            indexes[1] = getRandomIndex(account);
+        }
+
+        indexes[2] = indexes[1];
+        while((indexes[2] == indexes[0]) || (indexes[2] == indexes[1])) {
+            indexes[2] = getRandomIndex(account);
+        }
+
+        return indexes;
+    }
+
+    // Returns array of three non-duplicating integers from 0-9
+    function getRandomIndex (address account) internal returns (uint8) {
+        uint8 maxValue = 10;
+
+        // Pseudo random number...the incrementing nonce adds variation
+        uint8 random = uint8(uint256(keccak256(abi.encodePacked(blockhash(block.number - nonce++), account))) % maxValue);
+
+        if (nonce > 250) {
+            nonce = 0;  // Can only fetch blockhashes for last 256 blocks so we adapt
+        }
+
+        return random;
     }
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    /**
+    * @dev Change operating status
+    */
+    function setOperatingStatus(bool status) external requireContractOwner {
+        require(status != operational, "New mode must be different from existing mode");
+        operational = status;
+    }
   
    /**
     * @dev Add an airline to the registration queue
-    *
     */   
-    function registerAirline
-                            (   
-                            )
-                            external
-                            pure
-                            returns(bool success, uint256 votes)
-    {
+    function registerAirline () external requireIsOperational returns(bool success, uint256 votes) {
         return (success, 0);
     }
 
 
    /**
     * @dev Register a future flight for insuring.
-    *
     */  
-    function registerFlight
-                                (
-                                )
-                                external
-                                pure
-    {
+    function registerFlight () external requireIsOperational {
 
     }
     
    /**
     * @dev Called after oracle has updated flight status
-    *
     */  
-    function processFlightStatus
-                                (
-                                    address airline,
-                                    string memory flight,
-                                    uint256 timestamp,
-                                    uint8 statusCode
-                                )
-                                internal
-                                pure
-    {
+    function processFlightStatus(address airline, string memory flight, uint256 timestamp, uint8 statusCode) internal requireIsOperational {
+
     }
 
 
     // Generate a request for oracles to fetch flight information
-    function fetchFlightStatus
-                        (
-                            address airline,
-                            string flight,
-                            uint256 timestamp                            
-                        )
-                        external
-    {
+    function fetchFlightStatus (address airline, string flight, uint256 timestamp) external requireIsOperational {
         uint8 index = getRandomIndex(msg.sender);
 
         // Generate a unique key for storing the request
         bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
-        oracleResponses[key] = ResponseInfo({
-                                                requester: msg.sender,
-                                                isOpen: true
-                                            });
+        oracleResponses[key] = ResponseInfo({requester: msg.sender, isOpen: true});
 
         emit OracleRequest(index, airline, flight, timestamp);
     } 
@@ -213,6 +205,7 @@ contract FlightSuretyApp {
                             )
                             external
                             payable
+    requireIsOperational
     {
         // Require registration fee
         require(msg.value >= REGISTRATION_FEE, "Registration fee is required");
@@ -253,6 +246,7 @@ contract FlightSuretyApp {
                             uint8 statusCode
                         )
                         external
+    requireIsOperational
     {
         require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
 
@@ -288,49 +282,7 @@ contract FlightSuretyApp {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
-    // Returns array of three non-duplicating integers from 0-9
-    function generateIndexes
-                            (                       
-                                address account         
-                            )
-                            internal
-                            returns(uint8[3])
-    {
-        uint8[3] memory indexes;
-        indexes[0] = getRandomIndex(account);
-        
-        indexes[1] = indexes[0];
-        while(indexes[1] == indexes[0]) {
-            indexes[1] = getRandomIndex(account);
-        }
 
-        indexes[2] = indexes[1];
-        while((indexes[2] == indexes[0]) || (indexes[2] == indexes[1])) {
-            indexes[2] = getRandomIndex(account);
-        }
-
-        return indexes;
-    }
-
-    // Returns array of three non-duplicating integers from 0-9
-    function getRandomIndex
-                            (
-                                address account
-                            )
-                            internal
-                            returns (uint8)
-    {
-        uint8 maxValue = 10;
-
-        // Pseudo random number...the incrementing nonce adds variation
-        uint8 random = uint8(uint256(keccak256(abi.encodePacked(blockhash(block.number - nonce++), account))) % maxValue);
-
-        if (nonce > 250) {
-            nonce = 0;  // Can only fetch blockhashes for last 256 blocks so we adapt
-        }
-
-        return random;
-    }
 
 // endregion
 

@@ -1,5 +1,5 @@
 const HDWalletProvider = require("truffle-hdwallet-provider");
-//const mnemonic_test = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+//const mnemonic_test = "video physical pencil demand great this guitar dilemma debris display match hire";
 const fs = require('fs');
 const mnemonic = fs.readFileSync("C:\\Users\\yanni\\PycharmProjects\\bdnd\\.secret.txt").toString().trim();
 
@@ -17,7 +17,7 @@ module.exports = {
       host: "127.0.0.1",
       port: 7545,
       network_id: '*',
-      gas: 5999999
+      gas: 9999999
     },
 
     rinkeby: {
