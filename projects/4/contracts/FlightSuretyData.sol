@@ -10,7 +10,7 @@ contract FlightSuretyData {
     /********************************************************************************************/
 
     address private contractOwner;                                      // Account used to deploy contract
-    bool private operational = true;                                    // Blocks all state changes throughout the contract if false
+    bool private operational;                                    // Blocks all state changes throughout the contract if false
     mapping(address => bool) private authorizedCallers;
 
     /********************************************************************************************/
@@ -68,7 +68,7 @@ contract FlightSuretyData {
     *
     * @return A bool that is the current operating status
     */      
-    function isOperational() public view returns(bool) {
+    function isOperational() public view requireCallerAuthorized returns(bool) {
         return operational;
     }
 
@@ -83,11 +83,11 @@ contract FlightSuretyData {
         operational = mode;
     }
 
-    function authorizeCaller (address account) external requireContractOwner {
+    function authorizeCaller (address account) external requireContractOwner { //requireIsOperational
         authorizedCallers[account] = true;
     }
 
-    function deauthorizeCaller (address account) external requireContractOwner {
+    function deauthorizeCaller (address account) external requireContractOwner requireIsOperational {
         delete authorizedCallers[account];
     }
 
@@ -104,7 +104,8 @@ contract FlightSuretyData {
                             (   
                             )
                             external
-                            pure
+                            requireCallerAuthorized
+                            requireIsOperational
     {
     }
 
@@ -117,6 +118,8 @@ contract FlightSuretyData {
                             (                             
                             )
                             external
+                            requireCallerAuthorized
+                            requireIsOperational
                             payable
     {
 
@@ -129,7 +132,8 @@ contract FlightSuretyData {
                                 (
                                 )
                                 external
-                                pure
+                                requireCallerAuthorized
+                                requireIsOperational
     {
     }
     
@@ -142,7 +146,8 @@ contract FlightSuretyData {
                             (
                             )
                             external
-                            pure
+                            requireCallerAuthorized
+                            requireIsOperational
     {
     }
 
@@ -155,6 +160,8 @@ contract FlightSuretyData {
                             (   
                             )
                             public
+                            requireCallerAuthorized
+                            requireIsOperational
                             payable
     {
     }
@@ -177,7 +184,7 @@ contract FlightSuretyData {
     *
     */
     function() 
-                            external 
+                            external // requireCallerAuthorized ? requireIsOperational ?
                             payable 
     {
         fund();
