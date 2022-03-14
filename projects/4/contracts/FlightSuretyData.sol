@@ -13,6 +13,19 @@ contract FlightSuretyData {
     bool private operational;                                    // Blocks all state changes throughout the contract if false
     mapping(address => bool) private authorizedCallers;
 
+    // Airlines are recorded as soon as they receive their first vote.
+    // They need enough votes + deposit the seed money to become active members
+    struct Airline {
+        bool isRegistered;
+        bool hasPaidIn;
+        address[] votes;
+    }
+
+    mapping(address => Airline) private mapAirlines;
+    address[] private lsRegisteredAirlines;
+
+    uint8 private constant SEED = 10;
+
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -54,6 +67,10 @@ contract FlightSuretyData {
         _;
     }
 
+    /**
+    * @dev Modifier that requires the function caller to be registered as authorized
+    * Only the active App contract is meant to be authorized
+    */
     modifier requireCallerAuthorized() {
         require(authorizedCallers[msg.sender] == true, "Caller is not authorized");
         _;
@@ -65,17 +82,14 @@ contract FlightSuretyData {
 
     /**
     * @dev Get operating status of contract
-    *
     * @return A bool that is the current operating status
     */      
     function isOperational() public view requireCallerAuthorized returns(bool) {
         return operational;
     }
 
-
     /**
     * @dev Sets contract operations on/off
-    *
     * When operational mode is disabled, all write transactions except for this one will fail
     */    
     function setOperatingStatus(bool mode) external requireContractOwner {
@@ -83,6 +97,10 @@ contract FlightSuretyData {
         operational = mode;
     }
 
+    /**
+    * @dev Manage the list of authorized callers
+    * App contract v1 will be authorized at deployment.
+    */
     function authorizeCaller (address account) external requireContractOwner { //requireIsOperational
         authorizedCallers[account] = true;
     }
@@ -91,105 +109,123 @@ contract FlightSuretyData {
         delete authorizedCallers[account];
     }
 
+    /**
+    * @dev Get a unique identifier for a particular flight
+    */
+    function getFlightKey (address airline, string memory flight, uint256 timestamp) pure internal returns(bytes32) {
+        return keccak256(abi.encodePacked(airline, flight, timestamp));
+    }
+
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    // AIRLINES
    /**
     * @dev Add an airline to the registration queue
     *      Can only be called from FlightSuretyApp contract
-    *
     */   
-    function registerAirline
-                            (   
-                            )
-                            external
-                            requireCallerAuthorized
-                            requireIsOperational
-    {
+    function registerAirline (address adrAirline)
+        external requireCallerAuthorized requireIsOperational
+        returns(bool success, uint256 votes) {
+
+        require(mapAirlines[adrAirline].isRegistered == false, "Airline is already registered");
+        require(adrAirline != address(0), "Address must be valid");
+
+        uint airlinesCount = lsRegisteredAirlines.length;
+
+        if (airlinesCount == 0) {
+            mapAirlines[adrAirline].isRegistered = true;
+            lsRegisteredAirlines.push(adrAirline);
+
+            (success, votes) = (true, 0);
+        } else {
+
+            // check is msg.sender has already voted:
+            bool isDuplicate = false;
+            for (uint c=0; c<mapAirlines[adrAirline].votes.length; c++) {
+                if (mapAirlines[adrAirline].votes[c] == msg.sender) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+
+            // if not, record the vote:
+            require(!isDuplicate, "Caller has already voted for this airline");
+            mapAirlines[adrAirline].votes.push(msg.sender);
+
+            // calculate decision threshold
+            uint threshold;
+
+            if (airlinesCount < 4) {
+                threshold = 0;
+            } else if (airlinesCount % 2 == 0) {
+                threshold = airlinesCount.div(2) - 1;
+            } else {
+                threshold = airlinesCount.div(2);
+            }
+
+            // register if enough votes have been collected
+            if (mapAirlines[adrAirline].votes.length > threshold) {
+
+                mapAirlines[adrAirline].isRegistered = true; // hasPaidIn initialized to false
+                lsRegisteredAirlines.push(adrAirline);
+
+                (success, votes) = (true, mapAirlines[adrAirline].votes.length);
+            }
+        }
     }
 
+//    function isAirlineRegistered (address adrAirline) external requireCallerAuthorized requireIsOperational
+//        returns (bool) {
+//            return mapAirlines[adrAirline].isRegistered;
+//        }
 
+    function hasAirlinePaidIn (address adrAirline) external requireCallerAuthorized requireIsOperational
+        returns (bool) {
+            return mapAirlines[adrAirline].hasPaidIn;
+        }
+
+
+    /**
+    * @dev Initial funding for the insurance. Unless there are too many delayed flights
+    *      resulting in insurance payouts, the contract should be self-sustaining
+    *
+    */
+    function fund () public requireCallerAuthorized requireIsOperational payable {
+    }
+
+    // PASSENGERS
    /**
     * @dev Buy insurance for a flight
     *
     */   
-    function buy
-                            (                             
-                            )
-                            external
-                            requireCallerAuthorized
-                            requireIsOperational
-                            payable
-    {
-
+    function buy () external requireCallerAuthorized requireIsOperational payable {
     }
 
+
+    // INSURANCE CONTRACT
     /**
      *  @dev Credits payouts to insurees
     */
-    function creditInsurees
-                                (
-                                )
-                                external
-                                requireCallerAuthorized
-                                requireIsOperational
-    {
+    function creditInsurees () external requireCallerAuthorized requireIsOperational {
     }
-    
 
     /**
      *  @dev Transfers eligible payout funds to insuree
      *
     */
-    function pay
-                            (
-                            )
-                            external
-                            requireCallerAuthorized
-                            requireIsOperational
-    {
+    function pay () external requireCallerAuthorized requireIsOperational {
     }
 
-   /**
-    * @dev Initial funding for the insurance. Unless there are too many delayed flights
-    *      resulting in insurance payouts, the contract should be self-sustaining
-    *
-    */   
-    function fund
-                            (   
-                            )
-                            public
-                            requireCallerAuthorized
-                            requireIsOperational
-                            payable
-    {
-    }
 
-    function getFlightKey
-                        (
-                            address airline,
-                            string memory flight,
-                            uint256 timestamp
-                        )
-                        pure
-                        internal
-                        returns(bytes32) 
-    {
-        return keccak256(abi.encodePacked(airline, flight, timestamp));
-    }
-
+    // FALLBACK
     /**
     * @dev Fallback function for funding smart contract.
     *
     */
-    function() 
-                            external // requireCallerAuthorized ? requireIsOperational ?
-                            payable 
-    {
+    function() external payable { // requireCallerAuthorized ? requireIsOperational ?
         fund();
     }
-
-
 }
 

@@ -11,22 +11,23 @@ contract FlightSuretyApp {
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
+    address private contractOwner;
+    FlightSuretyData_int dataContract; // used as handle for  Data functions
+
+
     // Flight status codees
     uint8 private constant STATUS_CODE_UNKNOWN = 0;
     uint8 private constant STATUS_CODE_ON_TIME = 10;
-    uint8 private constant STATUS_CODE_LATE_AIRLINE = 20;
+    uint8 private constant STATUS_CODE_LATE_AIRLINE = 20; // triggers insurance pay out
     uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
     uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
-    address private contractOwner;
-
-    FlightSuretyData_int dataContract;
 
     struct Flight {
         bool isRegistered;
         uint8 statusCode;
-        uint256 updatedTimestamp;        
+        uint256 updatedTimestamp;
         address airline;
     }
     mapping(bytes32 => Flight) private flights;
@@ -112,13 +113,15 @@ contract FlightSuretyApp {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    // AIRLINES
    /**
     * @dev Add an airline to the registration queue
     */   
-    function registerAirline () external requireIsOperational returns(bool success, uint256 votes) {
-        return (success, 0);
-    }
+    function registerAirline (address adrAirline) external requireIsOperational returns(bool success, uint256 votes) {
 
+        require(dataContract.hasAirlinePaidIn(adrAirline), "Voter must be registered and paid-in");
+        return dataContract.registerAirline(adrAirline);
+    }
 
    /**
     * @dev Register a future flight for insuring.
@@ -127,15 +130,10 @@ contract FlightSuretyApp {
 
     }
     
-   /**
-    * @dev Called after oracle has updated flight status
-    */  
-    function processFlightStatus(address airline, string memory flight, uint256 timestamp, uint8 statusCode) internal requireIsOperational {
 
-    }
-
-
-    // Generate a request for oracles to fetch flight information
+    /**
+    * @dev Generate a request for oracles to fetch flight information
+    */
     function fetchFlightStatus (address airline, string flight, uint256 timestamp) external requireIsOperational {
         uint8 index = getRandomIndex(msg.sender);
 
@@ -144,10 +142,17 @@ contract FlightSuretyApp {
         oracleResponses[key] = ResponseInfo({requester: msg.sender, isOpen: true});
 
         emit OracleRequest(index, airline, flight, timestamp);
-    } 
+    }
+
+    /**
+    * @dev Called after oracle has updated flight status
+    */
+    function processFlightStatus(address airline, string memory flight, uint256 timestamp, uint8 statusCode) internal requireIsOperational {
+
+    }
 
 
-// region ORACLE MANAGEMENT
+    // ORACLE MANAGEMENT
 
     // Incremented to add pseudo-randomness at various points
     uint8 private nonce = 0;    
@@ -222,9 +227,6 @@ contract FlightSuretyApp {
         return oracles[msg.sender].indexes;
     }
 
-
-
-
     // Called by oracle when a response is available to an outstanding request
     // For the response to be accepted, there must be a pending request that is open
     // and matches one of the three Indexes randomly assigned to the oracle at the
@@ -238,7 +240,7 @@ contract FlightSuretyApp {
                             uint8 statusCode
                         )
                         external
-    requireIsOperational
+                        requireIsOperational
     {
         require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
 
@@ -273,9 +275,15 @@ contract FlightSuretyApp {
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
-// endregion
+    // end ORACLE MANAGEMENT
 }
+
+// Interface to Data contract
 
 contract FlightSuretyData_int {
     function isOperational() public view returns(bool);
+
+    function registerAirline (address adrAirline) external returns(bool success, uint256 votes);
+
+    function hasAirlinePaidIn (address adrAirline) external returns (bool);
 }
