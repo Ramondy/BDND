@@ -135,9 +135,6 @@ contract FlightSuretyData {
         external requireCallerAuthorized requireIsOperational
         returns(bool success, uint256 votes) {
 
-        require(mapAirlines[adrAirline].isRegistered == false, "Airline is already registered");
-        require(adrAirline != address(0), "Address must be valid");
-
         uint airlinesCount = lsPaidInAirlines.length;
 
         // check is msg.sender has already voted:
@@ -180,12 +177,12 @@ contract FlightSuretyData {
 
     }
 
-    function isAirlineRegistered (address adrAirline) external requireCallerAuthorized requireIsOperational
+    function isAirlineRegistered (address adrAirline) external view requireCallerAuthorized requireIsOperational
         returns (bool) {
             return mapAirlines[adrAirline].isRegistered;
         }
 
-    function hasAirlinePaidIn (address adrAirline) external requireCallerAuthorized requireIsOperational
+    function hasAirlinePaidIn (address adrAirline) external view requireCallerAuthorized requireIsOperational
         returns (bool) {
             return mapAirlines[adrAirline].hasPaidIn;
         }

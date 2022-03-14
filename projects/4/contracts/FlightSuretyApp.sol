@@ -120,6 +120,9 @@ contract FlightSuretyApp {
     function registerAirline (address adrAirline) external requireIsOperational returns(bool success, uint256 votes) {
 
         require(dataContract.hasAirlinePaidIn(adrAirline), "Voter must be registered and paid-in");
+        require(dataContract.isAirlineRegistered(adrAirline) == false, "Airline is already registered");
+        require(adrAirline != address(0), "Address must be valid");
+
         return dataContract.registerAirline(adrAirline);
     }
 
@@ -285,6 +288,6 @@ contract FlightSuretyData_int {
 
     function registerAirline (address adrAirline) external returns(bool success, uint256 votes);
 
-    function isAirlineRegistered (address adrAirline) external returns (bool);
-    function hasAirlinePaidIn (address adrAirline) external returns (bool);
+    function isAirlineRegistered (address adrAirline) external view returns (bool);
+    function hasAirlinePaidIn (address adrAirline) external view returns (bool);
 }
