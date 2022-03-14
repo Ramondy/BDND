@@ -15,7 +15,6 @@ module.exports = function(deployer) {
             .then((instance) => {
                 App = instance;
                 Data.authorizeCaller(App.address);
-                //Data.registerAirline(firstAirline)
             })
             .then(() => {
                 let config = {
