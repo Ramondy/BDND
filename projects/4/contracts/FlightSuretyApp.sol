@@ -285,5 +285,6 @@ contract FlightSuretyData_int {
 
     function registerAirline (address adrAirline) external returns(bool success, uint256 votes);
 
+    function isAirlineRegistered (address adrAirline) external returns (bool);
     function hasAirlinePaidIn (address adrAirline) external returns (bool);
 }

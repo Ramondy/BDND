@@ -22,7 +22,7 @@ contract FlightSuretyData {
     }
 
     mapping(address => Airline) private mapAirlines;
-    address[] private lsRegisteredAirlines;
+    address[] private lsPaidInAirlines;
 
     uint8 private constant SEED = 10;
 
@@ -35,9 +35,15 @@ contract FlightSuretyData {
     * @dev Constructor
     *      The deploying account becomes contractOwner
     */
-    constructor () public {
+    constructor (address firstAirline) public {
         contractOwner = msg.sender;
         operational = true;
+
+        // activate firstAirline
+        mapAirlines[firstAirline].isRegistered = true;
+        mapAirlines[firstAirline].hasPaidIn = true;
+        lsPaidInAirlines.push(firstAirline);
+
     }
 
     /********************************************************************************************/
@@ -132,54 +138,52 @@ contract FlightSuretyData {
         require(mapAirlines[adrAirline].isRegistered == false, "Airline is already registered");
         require(adrAirline != address(0), "Address must be valid");
 
-        uint airlinesCount = lsRegisteredAirlines.length;
+        uint airlinesCount = lsPaidInAirlines.length;
 
-        if (airlinesCount == 0) {
-            mapAirlines[adrAirline].isRegistered = true;
-            lsRegisteredAirlines.push(adrAirline);
-
-            (success, votes) = (true, 0);
-        } else {
-
-            // check is msg.sender has already voted:
-            bool isDuplicate = false;
-            for (uint c=0; c<mapAirlines[adrAirline].votes.length; c++) {
-                if (mapAirlines[adrAirline].votes[c] == msg.sender) {
-                    isDuplicate = true;
-                    break;
-                }
-            }
-
-            // if not, record the vote:
-            require(!isDuplicate, "Caller has already voted for this airline");
-            mapAirlines[adrAirline].votes.push(msg.sender);
-
-            // calculate decision threshold
-            uint threshold;
-
-            if (airlinesCount < 4) {
-                threshold = 0;
-            } else if (airlinesCount % 2 == 0) {
-                threshold = airlinesCount.div(2) - 1;
-            } else {
-                threshold = airlinesCount.div(2);
-            }
-
-            // register if enough votes have been collected
-            if (mapAirlines[adrAirline].votes.length > threshold) {
-
-                mapAirlines[adrAirline].isRegistered = true; // hasPaidIn initialized to false
-                lsRegisteredAirlines.push(adrAirline);
-
-                (success, votes) = (true, mapAirlines[adrAirline].votes.length);
+        // check is msg.sender has already voted:
+        bool isDuplicate = false;
+        for (uint c=0; c<mapAirlines[adrAirline].votes.length; c++) {
+            if (mapAirlines[adrAirline].votes[c] == msg.sender) {
+                isDuplicate = true;
+                break;
             }
         }
+
+        // if not, record the vote:
+        require(!isDuplicate, "Caller has already voted for this airline");
+        mapAirlines[adrAirline].votes.push(msg.sender);
+
+        // calculate decision threshold
+        uint threshold;
+
+        if (airlinesCount < 4) {
+            threshold = 0;
+        } else if (airlinesCount % 2 == 0) {
+            threshold = airlinesCount.div(2) - 1;
+        } else {
+            threshold = airlinesCount.div(2);
+        }
+
+        // register if enough votes have been collected
+        if (mapAirlines[adrAirline].votes.length > threshold) {
+
+            mapAirlines[adrAirline].isRegistered = true; // hasPaidIn initialized to false
+
+            // this will go away when paidIn is implemented
+            mapAirlines[adrAirline].hasPaidIn = true;
+            lsPaidInAirlines.push(adrAirline);
+
+            (success, votes) = (true, mapAirlines[adrAirline].votes.length);
+        } else {
+            (success, votes) = (false, mapAirlines[adrAirline].votes.length);
+        }
+
     }
 
-//    function isAirlineRegistered (address adrAirline) external requireCallerAuthorized requireIsOperational
-//        returns (bool) {
-//            return mapAirlines[adrAirline].isRegistered;
-//        }
+    function isAirlineRegistered (address adrAirline) external requireCallerAuthorized requireIsOperational
+        returns (bool) {
+            return mapAirlines[adrAirline].isRegistered;
+        }
 
     function hasAirlinePaidIn (address adrAirline) external requireCallerAuthorized requireIsOperational
         returns (bool) {

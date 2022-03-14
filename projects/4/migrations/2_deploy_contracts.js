@@ -6,15 +6,16 @@ let App, Data;
 
 module.exports = function(deployer) {
 
-    let firstAirline = '0xf17f52151EbEF6C7334FAD080c5704D77216b732';
+    let firstAirline = '0xFb36209A893D58B3eABA8Fec11f4fA725ec99186'; // ganache accounts[0]
 
-    deployer.deploy(FlightSuretyData)
+    deployer.deploy(FlightSuretyData, firstAirline) // so that firstAirline is active
     .then((instance) => {
         Data = instance;
         return deployer.deploy(FlightSuretyApp, FlightSuretyData.address) // so that contracts are linked during deployment
             .then((instance) => {
                 App = instance;
                 Data.authorizeCaller(App.address);
+                //Data.registerAirline(firstAirline)
             })
             .then(() => {
                 let config = {
