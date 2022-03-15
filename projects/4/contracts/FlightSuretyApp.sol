@@ -70,11 +70,25 @@ contract FlightSuretyApp {
     }
 
     /********************************************************************************************/
+    /*                                       EVENT DEFINITIONS                                  */
+    /********************************************************************************************/
+
+    //event AirlineRegistered(address adrAirline);
+
+    /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
 
     function isOperational() public view returns(bool) {
         return dataContract.isOperational();
+    }
+
+    function isAirlineRegistered(address adrAirline) public view returns(bool) {
+        return dataContract.isAirlineRegistered(adrAirline);
+    }
+
+    function hasAirlinePaidIn(address adrAirline) public view returns(bool) {
+        return dataContract.hasAirlinePaidIn(adrAirline);
     }
 
     // Returns array of three non-duplicating integers from 0-9
@@ -119,8 +133,8 @@ contract FlightSuretyApp {
     */   
     function registerAirline (address adrAirline) external requireIsOperational returns(bool success, uint256 votes) {
 
-        require(dataContract.hasAirlinePaidIn(adrAirline), "Voter must be registered and paid-in");
-        require(dataContract.isAirlineRegistered(adrAirline) == false, "Airline is already registered");
+        require(hasAirlinePaidIn(adrAirline), "Voter must be registered and paid-in");
+        require(isAirlineRegistered(adrAirline) == false, "Airline is already registered");
         require(adrAirline != address(0), "Address must be valid");
 
         return dataContract.registerAirline(adrAirline);

@@ -27,10 +27,8 @@ contract FlightSuretyData {
     uint8 private constant SEED = 10;
 
     /********************************************************************************************/
-    /*                                       EVENT DEFINITIONS                                  */
+    /*                                       CONSTRUCTOR                                        */
     /********************************************************************************************/
-
-
     /**
     * @dev Constructor
     *      The deploying account becomes contractOwner
@@ -45,6 +43,12 @@ contract FlightSuretyData {
         lsPaidInAirlines.push(firstAirline);
 
     }
+
+    /********************************************************************************************/
+    /*                                       EVENT DEFINITIONS                                  */
+    /********************************************************************************************/
+
+    event AirlineRegistered(address adrAirline);
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -169,6 +173,8 @@ contract FlightSuretyData {
             // this will go away when paidIn is implemented
             mapAirlines[adrAirline].hasPaidIn = true;
             lsPaidInAirlines.push(adrAirline);
+
+            emit AirlineRegistered(adrAirline);
 
             (success, votes) = (true, mapAirlines[adrAirline].votes.length);
         } else {

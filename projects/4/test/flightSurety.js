@@ -70,8 +70,8 @@ contract('Flight Surety Tests', async (accounts) => {
 
   it(`firstAirline is properly registered at deployment`, async function () {
 
-      let registered  = await config.flightSuretyData.isAirlineRegistered(config.firstAirline);
-      let paidIn = await config.flightSuretyData.hasAirlinePaidIn(config.firstAirline);
+      let registered  = await config.flightSuretyApp.isAirlineRegistered(config.firstAirline);
+      let paidIn = await config.flightSuretyApp.hasAirlinePaidIn(config.firstAirline);
 
       assert.equal(registered, true, "firstAirline is not registered");
       assert.equal(paidIn, true, "firstAirline is not paid in");
@@ -90,12 +90,13 @@ contract('Flight Surety Tests', async (accounts) => {
     catch(e) {
 
     }
-    let result = await config.flightSuretyData.isAirlineRegistered(newAirline);
+    let result = await config.flightSuretyApp.isAirlineRegistered(newAirline);
 
     // ASSERT
     assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
 
   });
- 
+
+  // NEXT: test capability to register more airlines
 
 });
