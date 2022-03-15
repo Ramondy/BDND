@@ -49,6 +49,7 @@ contract FlightSuretyData {
     /********************************************************************************************/
 
     event AirlineRegistered(address adrAirline);
+    event AirlineFunded(address adrAirline);
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -119,6 +120,16 @@ contract FlightSuretyData {
         delete authorizedCallers[account];
     }
 
+    function getContractBalance() public view returns(uint256) {
+        return address(this).balance;
+    }
+
+    function getPrevVotes(address adrAirline) public view returns(address[]) {
+        return mapAirlines[adrAirline].votes;
+    }
+
+
+
     /**
     * @dev Get a unique identifier for a particular flight
     */
@@ -135,24 +146,13 @@ contract FlightSuretyData {
     * @dev Add an airline to the registration queue
     *      Can only be called from FlightSuretyApp contract
     */   
-    function registerAirline (address adrAirline)
+    function registerAirline (address adrAirline, address voter)
         external requireCallerAuthorized requireIsOperational
         returns(bool success, uint256 votes) {
 
         uint airlinesCount = lsPaidInAirlines.length;
 
-        // check is msg.sender has already voted:
-        bool isDuplicate = false;
-        for (uint c=0; c<mapAirlines[adrAirline].votes.length; c++) {
-            if (mapAirlines[adrAirline].votes[c] == msg.sender) {
-                isDuplicate = true;
-                break;
-            }
-        }
-
-        // if not, record the vote:
-        require(!isDuplicate, "Caller has already voted for this airline");
-        mapAirlines[adrAirline].votes.push(msg.sender);
+        mapAirlines[adrAirline].votes.push(voter);
 
         // calculate decision threshold
         uint threshold;
@@ -168,11 +168,7 @@ contract FlightSuretyData {
         // register if enough votes have been collected
         if (mapAirlines[adrAirline].votes.length > threshold) {
 
-            mapAirlines[adrAirline].isRegistered = true; // hasPaidIn initialized to false
-
-            // this will go away when fund() is implemented
-            // mapAirlines[adrAirline].hasPaidIn = true;
-            // lsPaidInAirlines.push(adrAirline);
+            mapAirlines[adrAirline].isRegistered = true;
 
             emit AirlineRegistered(adrAirline);
 
@@ -205,11 +201,10 @@ contract FlightSuretyData {
 
         mapAirlines[msg.sender].hasPaidIn = true;
         lsPaidInAirlines.push(msg.sender);
+
+        emit AirlineFunded(msg.sender);
     }
 
-    function getContractBalance() public view returns(uint256) {
-        return address(this).balance;
-    }
 
     // PASSENGERS
    /**

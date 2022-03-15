@@ -137,7 +137,20 @@ contract FlightSuretyApp {
         require(isAirlineRegistered(adrAirline) == false, "Airline is already registered");
         require(adrAirline != address(0), "Address must be valid");
 
-        return dataContract.registerAirline(adrAirline);
+        // check is msg.sender has already voted:
+        bool isDuplicate = false;
+        address[] memory prev_votes = dataContract.getPrevVotes(adrAirline);
+
+        for (uint c=0; c<prev_votes.length; c++) {
+            if (prev_votes[c] == msg.sender) {
+                isDuplicate = true;
+                break;
+            }
+        }
+
+        require(!isDuplicate, "Caller has already voted for this airline");
+
+        return dataContract.registerAirline(adrAirline, msg.sender);
     }
 
 
@@ -301,7 +314,9 @@ contract FlightSuretyApp {
 contract FlightSuretyData_int {
     function isOperational() public view returns(bool);
 
-    function registerAirline (address adrAirline) external returns(bool success, uint256 votes);
+    function getPrevVotes (address adrAirline) public view returns(address[]);
+
+    function registerAirline (address adrAirline, address voter) external returns(bool success, uint256 votes);
 
     function isAirlineRegistered (address adrAirline) external view returns (bool);
     function hasAirlinePaidIn (address adrAirline) external view returns (bool);

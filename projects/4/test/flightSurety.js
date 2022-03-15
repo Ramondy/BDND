@@ -113,6 +113,7 @@ contract('Flight Surety Tests', async (accounts) => {
             try {
                 await config.flightSuretyApp.registerAirline(candidates[c], {from: config.firstAirline});
             } catch (e) {
+                console.log(e.reason);
             }
         }
 
@@ -208,7 +209,9 @@ contract('Flight Surety Tests', async (accounts) => {
     });
 
    it('(airline) a registered airline can fund the contract once if msg.value == 10 ETH', async() => {
-        // ARRANGE
+       // here we will fund the 3 registered nextAirlines
+
+       // ARRANGE
         let contributors = [accounts[1], accounts[2], accounts[3]]
         let contribution = BigNumber(10 * config.weiMultiple);
 
@@ -231,6 +234,91 @@ contract('Flight Surety Tests', async (accounts) => {
     });
 
     // next : test registration of additional airlines, require multiparty consensus
+    it('(airline) when 4 or more registered airlines, new candidate needs over 50% votes to be registered', async() => {
+        // ASSERT STATE
+        let voters = [accounts[0], accounts[1], accounts[2], accounts[3]];
+
+        let results = []
+
+        for (let c=0; c < voters.length; c++) {
+            results[c] = await config.flightSuretyApp.hasAirlinePaidIn(voters[c]);
+            assert.equal(results[c], true, `airline #${c} should be paid-in`);
+        }
+
+        // ARRANGE
+        let candidate = accounts[4];
+
+        // ACT
+        await config.flightSuretyApp.registerAirline(candidate, {from: voters[0]});
+
+        // ASSERT
+        let result = await config.flightSuretyApp.isAirlineRegistered(candidate);
+        assert.equal(result, false, "Candidate should not be registered after 1 vote");
+
+
+        // ACT
+        let reverted = false;
+        try {
+            await config.flightSuretyApp.registerAirline(candidate, {from: voters[0]});
+        } catch(e) {
+            console.log(e.reason);
+            reverted = true;
+        }
+
+        // ASSERT
+        assert.equal(reverted, true, "Voter should not be allowed to vote more than once");
+
+
+        // ACT
+        try {
+            await config.flightSuretyApp.registerAirline(candidate, {from: voters[1]});
+        } catch(e) {
+           console.log(e.reason);
+        }
+
+        // ASSERT
+        result = await config.flightSuretyApp.isAirlineRegistered(candidate);
+        assert.equal(result, true, "Candidate should be registered after 2 votes");
+
+        let contribution = BigNumber(10 * config.weiMultiple);
+
+        try {
+                await config.flightSuretyData.fund({from: candidate, value: contribution});
+            } catch (e) {
+                console.log(e);
+            }
+
+        // ARRANGE
+        candidate = accounts[5]
+
+        // ACT
+
+        try {
+            await config.flightSuretyApp.registerAirline(candidate, {from: voters[0]});
+        } catch(e) {
+           console.log(e.reason);
+        }
+        try {
+            await config.flightSuretyApp.registerAirline(candidate, {from: voters[1]});
+        } catch(e) {
+           console.log(e.reason);
+        }
+        // ASSERT
+        result = await config.flightSuretyApp.isAirlineRegistered(candidate);
+        assert.equal(result, false, "Candidate should not be registered after 2 votes");
+
+        // ACT
+        try {
+            await config.flightSuretyApp.registerAirline(candidate, {from: voters[2]});
+        } catch(e) {
+           console.log(e.reason);
+        }
+
+        // ASSERT
+        result = await config.flightSuretyApp.isAirlineRegistered(candidate);
+        assert.equal(result, true, "Candidate should be registered after 3 votes");
+
+    });
 
 
     // template
