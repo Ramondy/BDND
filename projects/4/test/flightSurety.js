@@ -191,7 +191,7 @@ contract('Flight Surety Tests', async (accounts) => {
     it('(airline) an airline can only fund once', async() => {
         // ARRANGE
         let contributor = accounts[0];
-        let contribution_duplicate = BigNumber(1 * config.weiMultiple);
+        let contribution_duplicate = BigNumber(10 * config.weiMultiple);
 
         // ACT
         let reverted = false;
@@ -207,10 +207,10 @@ contract('Flight Surety Tests', async (accounts) => {
         assert.equal(reverted, true, "Fund should fail if airline is already paid-in")
     });
 
-   it('(airline) a registered airline can fund the contract once if msg.value == 1 ETH', async() => {
+   it('(airline) a registered airline can fund the contract once if msg.value == 10 ETH', async() => {
         // ARRANGE
         let contributors = [accounts[1], accounts[2], accounts[3]]
-        let contribution = BigNumber(1 * config.weiMultiple);
+        let contribution = BigNumber(10 * config.weiMultiple);
 
         for (let c=0; c < contributors.length; c++) {
             try {
