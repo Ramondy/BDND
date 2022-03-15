@@ -69,7 +69,7 @@ export default class Contract {
     fundAirline(adrAirline, callback) {
         let self = this;
 
-        this.flightSuretyApp.options.gas = 200000;
+        this.flightSuretyData.options.gas = 200000;
 
         self.flightSuretyData.methods
             .fund()

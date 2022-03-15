@@ -1,20 +1,22 @@
 const FlightSuretyApp = artifacts.require("FlightSuretyApp");
 const FlightSuretyData = artifacts.require("FlightSuretyData");
 const fs = require('fs');
+var BigNumber = require('bignumber.js');
 
 let App, Data;
 
-module.exports = function(deployer) {
+module.exports = function(deployer, network, accounts) {
 
-    let firstAirline = '0x52470C66969b18ec064Ac73336DfF9F08955235a'; // ganache accounts[0]
-
-    deployer.deploy(FlightSuretyData, firstAirline) // so that firstAirline is active
+    deployer.deploy(FlightSuretyData, accounts[0], {from: accounts[0]})
     .then((instance) => {
         Data = instance;
-        return deployer.deploy(FlightSuretyApp, FlightSuretyData.address) // so that contracts are linked during deployment
+        return deployer.deploy(FlightSuretyApp, FlightSuretyData.address, {from: accounts[0]}) // so that contracts are linked during deployment
             .then((instance) => {
                 App = instance;
                 Data.authorizeCaller(App.address);
+            })
+            .then(() => {
+                Data.fund({ from: accounts[0], value: BigNumber(10 * BigNumber(10).pow(18)) });
             })
             .then(() => {
                 let config = {

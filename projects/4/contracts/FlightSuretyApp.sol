@@ -44,7 +44,7 @@ contract FlightSuretyApp {
     */
     modifier requireIsOperational() 
     {
-        require(dataContract.isOperational(), "Contract is currently not operational");
+        require(isOperational() == true, "Contract is currently not operational");
         _;
     }
 
@@ -92,7 +92,7 @@ contract FlightSuretyApp {
     }
 
     // Returns array of three non-duplicating integers from 0-9
-    function generateIndexes(address account) internal returns (uint8[3]) {
+    function generateIndexes(address account) private returns (uint8[3]) {
         uint8[3] memory indexes;
         indexes[0] = getRandomIndex(account);
 
@@ -110,7 +110,7 @@ contract FlightSuretyApp {
     }
 
     // Returns array of three non-duplicating integers from 0-9
-    function getRandomIndex (address account) internal returns (uint8) {
+    function getRandomIndex (address account) private returns (uint8) {
         uint8 maxValue = 10;
 
         // Pseudo random number...the incrementing nonce adds variation
@@ -139,7 +139,7 @@ contract FlightSuretyApp {
 
         // check is msg.sender has already voted:
         bool isDuplicate = false;
-        address[] memory prev_votes = dataContract.getPrevVotes(adrAirline);
+        address[] memory prev_votes = dataContract.getPreviousVotes(adrAirline);
 
         for (uint c=0; c<prev_votes.length; c++) {
             if (prev_votes[c] == msg.sender) {
@@ -178,7 +178,7 @@ contract FlightSuretyApp {
     /**
     * @dev Called after oracle has updated flight status
     */
-    function processFlightStatus(address airline, string memory flight, uint256 timestamp, uint8 statusCode) internal requireIsOperational {
+    function processFlightStatus(address airline, string memory flight, uint256 timestamp, uint8 statusCode) private requireIsOperational {
 
     }
 
@@ -301,7 +301,7 @@ contract FlightSuretyApp {
                             uint256 timestamp
                         )
                         pure
-                        internal
+                        private
                         returns(bytes32) 
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
@@ -312,9 +312,9 @@ contract FlightSuretyApp {
 // Interface to Data contract
 
 contract FlightSuretyData_int {
-    function isOperational() public view returns(bool);
+    function isOperational() external view returns(bool);
 
-    function getPrevVotes (address adrAirline) public view returns(address[]);
+    function getPreviousVotes (address adrAirline) external view returns(address[]);
 
     function registerAirline (address adrAirline, address voter) external returns(bool success, uint256 votes);
 

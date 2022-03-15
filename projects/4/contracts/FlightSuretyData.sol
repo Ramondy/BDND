@@ -9,12 +9,12 @@ contract FlightSuretyData {
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
-    address private contractOwner;                                      // Account used to deploy contract
-    bool private operational;                                    // Blocks all state changes throughout the contract if false
-    mapping(address => bool) private authorizedCallers;
+    address private contractOwner; // Account used to deploy contract
+    bool private operational; // Block all state changes throughout the contract if false
+    mapping(address => bool) private authorizedCallers; // Forbid calls from unauthorized contracts
 
     // Airlines are recorded as soon as they receive their first vote.
-    // They need enough votes + deposit the seed money to become active members
+    // They need enough votes + deposit the seed money to vote and register flights
     struct Airline {
         bool isRegistered;
         bool hasPaidIn;
@@ -37,11 +37,8 @@ contract FlightSuretyData {
         contractOwner = msg.sender;
         operational = true;
 
-        // activate firstAirline
+        // register firstAirline, funding will be called by deployment
         mapAirlines[firstAirline].isRegistered = true;
-        mapAirlines[firstAirline].hasPaidIn = true;
-        lsPaidInAirlines.push(firstAirline);
-
     }
 
     /********************************************************************************************/
@@ -55,18 +52,13 @@ contract FlightSuretyData {
     /*                                       FUNCTION MODIFIERS                                 */
     /********************************************************************************************/
 
-    // Modifiers help avoid duplication of code. They are typically used to validate something
-    // before a function is allowed to be executed.
-
     /**
     * @dev Modifier that requires the "operational" boolean variable to be "true"
-    *      This is used on all state changing functions to pause the contract in 
-    *      the event there is an issue that needs to be fixed
     */
     modifier requireIsOperational() 
     {
         require(operational, "Contract is currently not operational");
-        _;  // All modifiers require an "_" which indicates where the function body will be added
+        _;
     }
 
     /**
@@ -79,8 +71,9 @@ contract FlightSuretyData {
     }
 
     /**
-    * @dev Modifier that requires the function caller to be registered as authorized
+    * @dev Modifier that requires the function caller to be authorized
     * Only the active App contract is meant to be authorized
+    * Call is made during deployment
     */
     modifier requireCallerAuthorized() {
         require(authorizedCallers[msg.sender] == true, "Caller is not authorized");
@@ -95,7 +88,7 @@ contract FlightSuretyData {
     * @dev Get operating status of contract
     * @return A bool that is the current operating status
     */      
-    function isOperational() public view requireCallerAuthorized returns(bool) {
+    function isOperational() external view requireCallerAuthorized returns(bool) {
         return operational;
     }
 
@@ -112,28 +105,37 @@ contract FlightSuretyData {
     * @dev Manage the list of authorized callers
     * App contract v1 will be authorized at deployment.
     */
-    function authorizeCaller (address account) external requireContractOwner { //requireIsOperational
+    function authorizeCaller (address account) external requireContractOwner {
         authorizedCallers[account] = true;
     }
 
-    function deauthorizeCaller (address account) external requireContractOwner requireIsOperational {
+    function deauthorizeCaller (address account) external requireContractOwner {
         delete authorizedCallers[account];
     }
 
-    function getContractBalance() public view returns(uint256) {
-        return address(this).balance;
-    }
+//    function getContractBalance() public view returns(uint256) {
+//        return address(this).balance;
+//    }
 
-    function getPrevVotes(address adrAirline) public view returns(address[]) {
+    function isAirlineRegistered (address adrAirline) external view requireIsOperational  // external ?
+        returns (bool) {
+            return mapAirlines[adrAirline].isRegistered;
+        }
+
+    function hasAirlinePaidIn (address adrAirline) external view requireIsOperational // external ?
+        returns (bool) {
+            return mapAirlines[adrAirline].hasPaidIn;
+        }
+
+    function getPreviousVotes(address adrAirline) external view requireCallerAuthorized requireIsOperational
+    returns(address[]) {
         return mapAirlines[adrAirline].votes;
     }
-
-
 
     /**
     * @dev Get a unique identifier for a particular flight
     */
-    function getFlightKey (address airline, string memory flight, uint256 timestamp) pure internal returns(bytes32) {
+    function getFlightKey (address airline, string memory flight, uint256 timestamp) pure private returns(bytes32) {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
@@ -150,19 +152,19 @@ contract FlightSuretyData {
         external requireCallerAuthorized requireIsOperational
         returns(bool success, uint256 votes) {
 
-        uint airlinesCount = lsPaidInAirlines.length;
+        uint countPaidAirlines = lsPaidInAirlines.length;
 
         mapAirlines[adrAirline].votes.push(voter);
 
         // calculate decision threshold
         uint threshold;
 
-        if (airlinesCount < 4) {
+        if (countPaidAirlines < 4) {
             threshold = 0;
-        } else if (airlinesCount % 2 == 0) {
-            threshold = airlinesCount.div(2) - 1;
+        } else if (countPaidAirlines % 2 == 0) {
+            threshold = countPaidAirlines.div(2) - 1;
         } else {
-            threshold = airlinesCount.div(2);
+            threshold = countPaidAirlines.div(2);
         }
 
         // register if enough votes have been collected
@@ -179,25 +181,15 @@ contract FlightSuretyData {
 
     }
 
-    function isAirlineRegistered (address adrAirline) public view requireIsOperational
-        returns (bool) {
-            return mapAirlines[adrAirline].isRegistered;
-        }
-
-    function hasAirlinePaidIn (address adrAirline) public view requireIsOperational
-        returns (bool) {
-            return mapAirlines[adrAirline].hasPaidIn;
-        }
-
 
     /**
     * @dev Initial funding for the insurance. Unless there are too many delayed flights
     *      resulting in insurance payouts, the contract should be self-sustaining
     */
-    function fund() public requireIsOperational payable {
-        require(isAirlineRegistered(msg.sender) == true, "Only registered airline can fund the contract");
+    function fund() external requireIsOperational payable {
+        require(mapAirlines[msg.sender].isRegistered == true, "Only registered airline can fund the contract");
         require(msg.value == SEED, "Please send exactly 10 ETH");
-        require(hasAirlinePaidIn(msg.sender) == false, "Airlines can only fund once");
+        require(mapAirlines[msg.sender].hasPaidIn == false, "Airlines can only fund once");
 
         mapAirlines[msg.sender].hasPaidIn = true;
         lsPaidInAirlines.push(msg.sender);
