@@ -132,6 +132,15 @@ contract FlightSuretyData {
         return mapAirlines[adrAirline].votes;
     }
 
+    function countPaidAirlines() external view requireCallerAuthorized requireIsOperational
+    returns (uint256) {
+        return lsPaidInAirlines.length;
+    }
+
+    function registerVote(address candidate, address voter) external requireCallerAuthorized requireIsOperational {
+        mapAirlines[candidate].votes.push(voter);
+    }
+
     /**
     * @dev Get a unique identifier for a particular flight
     */
@@ -143,41 +152,13 @@ contract FlightSuretyData {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+
     // AIRLINES
-   /**
-    * @dev Add an airline to the registration queue
-    *      Can only be called from FlightSuretyApp contract
-    */   
-    function registerAirline (address adrAirline, address voter)
-        external requireCallerAuthorized requireIsOperational
-        returns(bool success, uint256 votes) {
+    function registerAirline (address adrAirline)
+        external requireCallerAuthorized requireIsOperational {
 
-        uint countPaidAirlines = lsPaidInAirlines.length;
-
-        mapAirlines[adrAirline].votes.push(voter);
-
-        // calculate decision threshold
-        uint threshold;
-
-        if (countPaidAirlines < 4) {
-            threshold = 0;
-        } else if (countPaidAirlines % 2 == 0) {
-            threshold = countPaidAirlines.div(2) - 1;
-        } else {
-            threshold = countPaidAirlines.div(2);
-        }
-
-        // register if enough votes have been collected
-        if (mapAirlines[adrAirline].votes.length > threshold) {
-
-            mapAirlines[adrAirline].isRegistered = true;
-
-            emit AirlineRegistered(adrAirline);
-
-            (success, votes) = (true, mapAirlines[adrAirline].votes.length);
-        } else {
-            (success, votes) = (false, mapAirlines[adrAirline].votes.length);
-        }
+        mapAirlines[adrAirline].isRegistered = true;
+        emit AirlineRegistered(adrAirline);
 
     }
 

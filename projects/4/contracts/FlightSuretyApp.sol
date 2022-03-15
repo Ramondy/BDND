@@ -131,26 +131,55 @@ contract FlightSuretyApp {
    /**
     * @dev Add an airline to the registration queue
     */   
-    function registerAirline (address adrAirline) external requireIsOperational returns(bool success, uint256 votes) {
+    function registerAirline (address adrAirline) external requireIsOperational
+    returns (bool success, uint256 votes) {
 
         require(hasAirlinePaidIn(msg.sender), "Voter must be registered and paid-in");
         require(isAirlineRegistered(adrAirline) == false, "Airline is already registered");
         require(adrAirline != address(0), "Address must be valid");
 
-        // check is msg.sender has already voted:
+        // check is msg.sender has already voted
         bool isDuplicate = false;
-        address[] memory prev_votes = dataContract.getPreviousVotes(adrAirline);
+        address[] memory listPreviousVotes = dataContract.getPreviousVotes(adrAirline);
+        uint256 countPreviousVotes = listPreviousVotes.length;
 
-        for (uint c=0; c<prev_votes.length; c++) {
-            if (prev_votes[c] == msg.sender) {
+        for (uint c=0; c<countPreviousVotes; c++) {
+            if (listPreviousVotes[c] == msg.sender) {
                 isDuplicate = true;
                 break;
             }
         }
 
+        // continue only if vote not duplicate
         require(!isDuplicate, "Caller has already voted for this airline");
 
-        return dataContract.registerAirline(adrAirline, msg.sender);
+        // register vote in Data, update local variable
+        dataContract.registerVote(adrAirline, msg.sender);
+        countPreviousVotes = dataContract.getPreviousVotes(adrAirline).length;
+
+        // calculate threshold
+        uint countPaidAirlines = dataContract.countPaidAirlines();
+        uint threshold;
+
+        if (countPaidAirlines < 4) {
+            threshold = 0;
+        } else if (countPaidAirlines % 2 == 0) {
+            threshold = countPaidAirlines.div(2) - 1;
+        } else {
+            threshold = countPaidAirlines.div(2);
+        }
+
+        if (countPreviousVotes > threshold) {
+
+            dataContract.registerAirline(adrAirline);
+            return (true, countPreviousVotes);
+
+        } else {
+
+            return (false, countPreviousVotes);
+
+        }
+
     }
 
 
@@ -316,7 +345,9 @@ contract FlightSuretyData_int {
 
     function getPreviousVotes (address adrAirline) external view returns(address[]);
 
-    function registerAirline (address adrAirline, address voter) external returns(bool success, uint256 votes);
+    function countPaidAirlines() external view returns (uint256);
+    function registerVote(address candidate, address voter) external;
+    function registerAirline (address adrAirline) external;
 
     function isAirlineRegistered (address adrAirline) external view returns (bool);
     function hasAirlinePaidIn (address adrAirline) external view returns (bool);

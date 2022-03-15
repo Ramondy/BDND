@@ -71,9 +71,12 @@ contract('Flight Surety Tests', async (accounts) => {
     it(`firstAirline is properly registered at deployment`, async function () {
 
         let registered  = await config.flightSuretyApp.isAirlineRegistered(config.firstAirline);
-        let paidIn = await config.flightSuretyApp.hasAirlinePaidIn(config.firstAirline);
-
         assert.equal(registered, true, "firstAirline is not registered");
+
+        let contribution = BigNumber(10 * config.weiMultiple);
+        await config.flightSuretyData.fund({from: config.firstAirline, value: contribution});
+
+        let paidIn = await config.flightSuretyApp.hasAirlinePaidIn(config.firstAirline);
         assert.equal(paidIn, true, "firstAirline is not paid in");
 
     });
