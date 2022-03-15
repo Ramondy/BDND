@@ -133,7 +133,7 @@ contract FlightSuretyApp {
     */   
     function registerAirline (address adrAirline) external requireIsOperational returns(bool success, uint256 votes) {
 
-        require(hasAirlinePaidIn(adrAirline), "Voter must be registered and paid-in");
+        require(hasAirlinePaidIn(msg.sender), "Voter must be registered and paid-in");
         require(isAirlineRegistered(adrAirline) == false, "Airline is already registered");
         require(adrAirline != address(0), "Address must be valid");
 

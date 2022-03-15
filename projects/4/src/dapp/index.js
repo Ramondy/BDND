@@ -15,7 +15,21 @@ import './flightsurety.css';
             console.log(error,result);
             display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
         });
+
+        contract.hasAirlinePaidIn((error, result) => {
+            console.log(error,result);
+            display('Airlines', 'Check if first airline is paid-in', [ { label: 'hasAirlinePaidIn', error: error, value: result} ]);
+        });
     
+
+        DOM.elid('register-airline').addEventListener('click', () => {
+            let adrAirline = DOM.elid('airline-address').value;
+            // Write transaction
+            contract.registerAirline(adrAirline, (error, result) => {
+                console.log(error,result);
+                display('Airlines', 'Register airline', [ { label: 'Register airline', error: error, value: result} ]);
+            });
+        })
 
         // User-submitted transaction
         DOM.elid('submit-oracle').addEventListener('click', () => {
