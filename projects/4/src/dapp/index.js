@@ -8,7 +8,7 @@ import './flightsurety.css';
 
     let result = null;
 
-    let contract = new Contract('localhost', () => {
+    let contract = new Contract('localhost', async() => {
 
         // Read transaction
         contract.isOperational((error, result) => {
@@ -16,20 +16,42 @@ import './flightsurety.css';
             display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
         });
 
-        contract.hasAirlinePaidIn((error, result) => {
+
+        contract.hasAirlinePaidIn(2, (error, result) => {
             console.log(error,result);
-            display('Airlines', 'Check if first airline is paid-in', [ { label: 'hasAirlinePaidIn', error: error, value: result} ]);
+            display('Airlines', `Check if airline has paid-in`, [ { label: 'hasAirlinePaidIn', error: error, value: result} ]);
         });
     
 
         DOM.elid('register-airline').addEventListener('click', () => {
             let adrAirline = DOM.elid('airline-address').value;
-            // Write transaction
+            // manually register an airline
             contract.registerAirline(adrAirline, (error, result) => {
                 console.log(error,result);
                 display('Airlines', 'Register airline', [ { label: 'Register airline', error: error, value: result} ]);
             });
         })
+
+        DOM.elid('register-airlines').addEventListener('click', () => {
+            // register 3 nextAirlines from firstAirline
+            console.log(contract.nextAirlines.length)
+            for (let c=0; c<contract.nextAirlines.length; c++) {
+                    contract.registerAirline(contract.nextAirlines[c], (error, result) => {
+                        console.log(error,result);
+                        //contract.nextAirlines[c];
+                        display('Airlines', 'Register airline', [ { label: 'Register airline', error: error, value: result} ]);
+                    });
+                }
+
+            // contract.registerAirline(adrAirline, (error, result) => {
+            //     console.log(error,result);
+            //     display('Airlines', 'Register airline', [ { label: 'Register airline', error: error, value: result} ]);
+            // });
+        })
+
+
+
+
 
         // User-submitted transaction
         DOM.elid('submit-oracle').addEventListener('click', () => {

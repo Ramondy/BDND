@@ -11,7 +11,7 @@ export default class Contract {
         this.initialize(callback);
         this.owner = null;
         this.firstAirline = null;
-        this.airlines = [];
+        this.nextAirlines = [];
         this.passengers = [];
         this.reg_airlines_count = 0;
     }
@@ -22,10 +22,10 @@ export default class Contract {
             this.owner = accts[0];
             this.firstAirline = accts[0];
 
-            let counter = 0;
+            let counter = 1;
             
-            while(this.airlines.length < 7) {
-                this.airlines.push(accts[counter++]);
+            while(this.nextAirlines.length < 3) {
+                this.nextAirlines.push(accts[counter++]);
             }
 
             while(this.passengers.length < 5) {
@@ -43,21 +43,21 @@ export default class Contract {
             .call({ from: self.owner}, callback);
     }
 
-    hasAirlinePaidIn(callback) {
+    hasAirlinePaidIn(index, callback) {
        let self = this;
        self.flightSuretyApp.methods
-            .hasAirlinePaidIn(self.airlines[4]) //
+            .hasAirlinePaidIn(self.nextAirlines[index]) //
             .call({ from: self.owner }, callback);
     }
 
-    async registerAirline(adrAirline, callback) {
+    registerAirline(adrAirline, callback) {
         let self = this;
 
         this.flightSuretyApp.options.gas = 200000;
 
         self.flightSuretyApp.methods
             .registerAirline(adrAirline)
-            .send({ from: self.airlines[0] }, (error, result) => {
+            .send({ from: self.firstAirline }, (error, result) => {
                 callback(error, result);
             });
 
