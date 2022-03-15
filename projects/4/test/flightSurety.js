@@ -98,7 +98,7 @@ contract('Flight Surety Tests', async (accounts) => {
 
     });
 
-    it('(airline) can register more Airlines using registerAirline() when properly funded', async () => {
+    it('(airline) firstAirline can register up to three additional Airlines on its own', async () => {
         // ASSERT INITIAL STATE
         assert.equal(await config.flightSuretyApp.hasAirlinePaidIn(config.firstAirline), true, "First Airline is not paid in");
 
@@ -106,18 +106,28 @@ contract('Flight Surety Tests', async (accounts) => {
         let secondAirline = accounts[1];
         assert.equal(await config.flightSuretyApp.isAirlineRegistered(secondAirline), false, "Candidate Airline is already registered");
 
+        let candidates = [accounts[1], accounts[2], accounts[3]]
 
         // ACT
         try {
-            await config.flightSuretyApp.registerAirline(secondAirline, {from: config.firstAirline});
+            for (let c=0; c < candidates.length; c++) {
+                await config.flightSuretyApp.registerAirline(candidates[c], {from: config.firstAirline});
+            }
         }
         catch(e) {
 
         }
-        let result = await config.flightSuretyApp.isAirlineRegistered(secondAirline);
+
 
         // ASSERT
-        assert.equal(result, true, "Airline should be able to register another airline if it has provided funding");
+
+        let results = []
+
+        for (let c=0; c < candidates.length; c++) {
+            results[c] = await config.flightSuretyApp.isAirlineRegistered(candidates[c]);
+            assert.equal(results[c], true, `firstAirline should be able to register account #${c+1}`);
+        }
+
     });
 
     it('(airline) registerAirline should fail if candidate is already registered', async() => {
