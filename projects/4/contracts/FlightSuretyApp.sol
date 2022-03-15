@@ -140,6 +140,7 @@ contract FlightSuretyApp {
         return dataContract.registerAirline(adrAirline);
     }
 
+
    /**
     * @dev Register a future flight for insuring.
     */  

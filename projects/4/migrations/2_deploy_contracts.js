@@ -6,7 +6,7 @@ let App, Data;
 
 module.exports = function(deployer) {
 
-    let firstAirline = '0xFb36209A893D58B3eABA8Fec11f4fA725ec99186'; // ganache accounts[0]
+    let firstAirline = '0x52470C66969b18ec064Ac73336DfF9F08955235a'; // ganache accounts[0]
 
     deployer.deploy(FlightSuretyData, firstAirline) // so that firstAirline is active
     .then((instance) => {

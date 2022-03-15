@@ -1,6 +1,8 @@
 import FlightSuretyApp from '../../build/contracts/FlightSuretyApp.json';
+import FlightSuretyData from '../../build/contracts/FlightSuretyData.json';
 import Config from './config.json';
 import Web3 from 'web3';
+import BigNumber from "bignumber.js";
 
 export default class Contract {
     constructor(network, callback) {
@@ -8,6 +10,7 @@ export default class Contract {
         let config = Config[network];
         this.web3 = new Web3(new Web3.providers.HttpProvider(config.url));
         this.flightSuretyApp = new this.web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
+        this.flightSuretyData = new this.web3.eth.Contract(FlightSuretyData.abi, config.dataAddress);
         this.initialize(callback);
         this.owner = null;
         this.firstAirline = null;
@@ -62,6 +65,20 @@ export default class Contract {
             });
 
     }
+
+    fundAirline(adrAirline, callback) {
+        let self = this;
+
+        this.flightSuretyApp.options.gas = 200000;
+
+        self.flightSuretyData.methods
+            .fund()
+            .send({ from: adrAirline, value: BigNumber(10 * BigNumber(10).pow(18)) }, (error, result) => {
+                callback(error, result);
+            });
+
+    }
+
 
     fetchFlightStatus(flight, callback) {
         let self = this;

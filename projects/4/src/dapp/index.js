@@ -17,7 +17,7 @@ import './flightsurety.css';
         });
 
 
-        contract.hasAirlinePaidIn(2, (error, result) => {
+        contract.hasAirlinePaidIn(0, (error, result) => {
             console.log(error,result);
             display('Airlines', `Check if airline has paid-in`, [ { label: 'hasAirlinePaidIn', error: error, value: result} ]);
         });
@@ -34,7 +34,6 @@ import './flightsurety.css';
 
         DOM.elid('register-airlines').addEventListener('click', () => {
             // register 3 nextAirlines from firstAirline
-            console.log(contract.nextAirlines.length)
             for (let c=0; c<contract.nextAirlines.length; c++) {
                     contract.registerAirline(contract.nextAirlines[c], (error, result) => {
                         console.log(error,result);
@@ -42,11 +41,16 @@ import './flightsurety.css';
                         display('Airlines', 'Register airline', [ { label: 'Register airline', error: error, value: result} ]);
                     });
                 }
+        })
 
-            // contract.registerAirline(adrAirline, (error, result) => {
-            //     console.log(error,result);
-            //     display('Airlines', 'Register airline', [ { label: 'Register airline', error: error, value: result} ]);
-            // });
+        DOM.elid('fund-airlines').addEventListener('click', () => {
+            // fund 3 nextAirlines
+            for (let c=0; c<contract.nextAirlines.length; c++) {
+                    contract.fundAirline(contract.nextAirlines[c], (error, result) => {
+                        console.log(error,result);
+                        display('Airlines', 'Fund airline', [ { label: 'Fund airline', error: error, value: result} ]);
+                    });
+                }
         })
 
 

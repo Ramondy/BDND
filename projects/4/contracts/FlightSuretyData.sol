@@ -24,7 +24,7 @@ contract FlightSuretyData {
     mapping(address => Airline) private mapAirlines;
     address[] private lsPaidInAirlines;
 
-    uint8 private constant SEED = 10;
+    uint256 private constant SEED = 10 ether;
 
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
@@ -170,9 +170,9 @@ contract FlightSuretyData {
 
             mapAirlines[adrAirline].isRegistered = true; // hasPaidIn initialized to false
 
-            // this will go away when paidIn is implemented
-            mapAirlines[adrAirline].hasPaidIn = true;
-            lsPaidInAirlines.push(adrAirline);
+            // this will go away when fund() is implemented
+            // mapAirlines[adrAirline].hasPaidIn = true;
+            // lsPaidInAirlines.push(adrAirline);
 
             emit AirlineRegistered(adrAirline);
 
@@ -183,12 +183,12 @@ contract FlightSuretyData {
 
     }
 
-    function isAirlineRegistered (address adrAirline) external view requireCallerAuthorized requireIsOperational
+    function isAirlineRegistered (address adrAirline) public view requireIsOperational
         returns (bool) {
             return mapAirlines[adrAirline].isRegistered;
         }
 
-    function hasAirlinePaidIn (address adrAirline) external view requireCallerAuthorized requireIsOperational
+    function hasAirlinePaidIn (address adrAirline) public view requireIsOperational
         returns (bool) {
             return mapAirlines[adrAirline].hasPaidIn;
         }
@@ -197,9 +197,18 @@ contract FlightSuretyData {
     /**
     * @dev Initial funding for the insurance. Unless there are too many delayed flights
     *      resulting in insurance payouts, the contract should be self-sustaining
-    *
     */
-    function fund () public requireCallerAuthorized requireIsOperational payable {
+    function fund() public requireIsOperational payable {
+        require(isAirlineRegistered(msg.sender) == true, "Only registered airline can fund the contract");
+        require(msg.value == SEED, "Please send exactly 10 ETH");
+        require(hasAirlinePaidIn(msg.sender) == false, "Airlines can only fund once");
+
+        mapAirlines[msg.sender].hasPaidIn = true;
+        lsPaidInAirlines.push(msg.sender);
+    }
+
+    function getContractBalance() public view returns(uint256) {
+        return address(this).balance;
     }
 
     // PASSENGERS
@@ -231,8 +240,7 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    function() external payable { // requireCallerAuthorized ? requireIsOperational ?
-        fund();
+    function() external payable {
     }
 }
 

@@ -1,6 +1,6 @@
 
 var Test = require('../config/testConfig.js');
-//var BigNumber = require('bignumber.js');
+var BigNumber = require('bignumber.js');
 
 contract('Flight Surety Tests', async (accounts) => {
 
@@ -109,15 +109,12 @@ contract('Flight Surety Tests', async (accounts) => {
         let candidates = [accounts[1], accounts[2], accounts[3]]
 
         // ACT
-        try {
-            for (let c=0; c < candidates.length; c++) {
+        for (let c=0; c < candidates.length; c++) {
+            try {
                 await config.flightSuretyApp.registerAirline(candidates[c], {from: config.firstAirline});
+            } catch (e) {
             }
         }
-        catch(e) {
-
-        }
-
 
         // ASSERT
 
@@ -145,6 +142,7 @@ contract('Flight Surety Tests', async (accounts) => {
             await config.flightSuretyApp.registerAirline(candidate, {from: config.firstAirline});
         }
         catch(e) {
+            console.log(e.reason);
             reverted = true;
         }
 
@@ -153,4 +151,92 @@ contract('Flight Surety Tests', async (accounts) => {
 
     });
 
+    it('(airline) an airline not registered cannot fund the contract ', async() => {
+        // ARRANGE
+        let contributor = accounts[4];
+
+        // ACT
+        let reverted = false;
+        try {
+            await config.flightSuretyData.fund({from: contributor});
+        }
+        catch(e) {
+            console.log(e.reason);
+            reverted = true;
+        }
+
+        // ASSERT
+        assert.equal(reverted, true, "Fund should fail is contributor is not registered")
+    });
+
+    it('(airline) a registered airline cannot fund the contract if msg.value != 10 ETH', async() => {
+        // ARRANGE
+        let contributor = accounts[1];
+        let contribution = 3;
+
+        // ACT
+        let reverted = false;
+        try {
+            await config.flightSuretyData.fund({from: contributor, value: contribution});
+        }
+        catch(e) {
+            console.log(e.reason);
+            reverted = true;
+        }
+
+        // ASSERT
+        assert.equal(reverted, true, "Fund should fail if contribution is not exact")
+    });
+
+    it('(airline) an airline can only fund once', async() => {
+        // ARRANGE
+        let contributor = accounts[0];
+        let contribution_duplicate = BigNumber(1 * config.weiMultiple);
+
+        // ACT
+        let reverted = false;
+        try {
+            await config.flightSuretyData.fund({from: contributor, value: contribution_duplicate});
+        }
+        catch(e) {
+            console.log(e.reason);
+            reverted = true;
+        }
+
+        // ASSERT
+        assert.equal(reverted, true, "Fund should fail if airline is already paid-in")
+    });
+
+   it('(airline) a registered airline can fund the contract once if msg.value == 1 ETH', async() => {
+        // ARRANGE
+        let contributors = [accounts[1], accounts[2], accounts[3]]
+        let contribution = BigNumber(1 * config.weiMultiple);
+
+        for (let c=0; c < contributors.length; c++) {
+            try {
+                await config.flightSuretyData.fund({from: contributors[c], value: contribution});
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        // ASSERT
+
+        let results = []
+
+        for (let c=0; c < contributors.length; c++) {
+            results[c] = await config.flightSuretyApp.hasAirlinePaidIn(contributors[c]);
+            assert.equal(results[c], true, `registered airline #${c+1} should be able to fund the contract`);
+        }
+    });
+
+    // next : test registration of additional airlines, require multiparty consensus
+
+
+    // template
+/*    it('(airline)xx ', async() => {
+        // ARRANGE
+        // ACT
+        // ASSERT
+    });*/
 });
