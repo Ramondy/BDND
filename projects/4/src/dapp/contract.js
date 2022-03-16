@@ -16,24 +16,40 @@ export default class Contract {
         this.firstAirline = null;
         this.nextAirlines = [];
         this.passengers = [];
+        this.testFlights = {};
         this.reg_airlines_count = 0;
     }
 
     initialize(callback) {
-        this.web3.eth.getAccounts((error, accts) => {
+        this.web3.eth.getAccounts((error, accounts) => {
            
-            this.owner = accts[0];
-            this.firstAirline = accts[0];
+            this.owner = accounts[0];
+            this.firstAirline = accounts[0];
 
             let counter = 1;
             
             while(this.nextAirlines.length < 3) {
-                this.nextAirlines.push(accts[counter++]);
+                this.nextAirlines.push(accounts[counter++]);
             }
 
             while(this.passengers.length < 5) {
-                this.passengers.push(accts[counter++]);
+                this.passengers.push(accounts[counter++]);
             }
+
+            this.testFlights = {
+                AF2708: {
+                            adrAirline: accounts[0], // paid-in airline
+                            strFlight: "AF2708",
+                            timestamp: Math.floor(Date.now() / 1000),
+                        },
+                AA2016: {
+                            adrAirline: accounts[9], // NOT paid-in airline
+                            strFlight: "AA2016",
+                            timestamp: Math.floor(Date.now() / 1000),
+                        },
+                };
+
+            this.passenger = accounts[6];
 
             callback();
         });
@@ -76,6 +92,23 @@ export default class Contract {
             .send({ from: adrAirline, value: BigNumber(10 * BigNumber(10).pow(18)) }, (error, result) => {
                 callback(error, result);
             });
+
+    }
+
+    buyInsurance(payload, callback) {
+        let self = this;
+
+        // this.flightSuretyData.options.gas = 200000;
+        // console.log("hello world");
+        // callback();
+
+        // this.flightSuretyApp.methods
+        //     .registerFlight(payload.adrAirline, payload.strFlight, payload.timestamp)
+        //     .send( {}, (error, result) => {
+        //         callback(error, result);
+        //     });
+
+        // { from: payload.passenger, value: payload.premium}
 
     }
 

@@ -53,7 +53,32 @@ import './flightsurety.css';
                 }
         })
 
+        DOM.elid('buy-insurance').addEventListener("submit",function (e) {
+            e.preventDefault();
 
+            let strFlight = DOM.elid('strFlight').value;
+            // let adrAirline = contract.testFlights[strFlight].adrAirline;
+            // let timestamp = contract.testFlights[strFlight].timestamp;
+            //
+            let premium = parseInt(DOM.elid('premium').value);
+            // let passenger = contract.passenger;
+
+            let payload = {
+                strFlight: strFlight,
+                adrAirline: contract.testFlights[strFlight].adrAirline,
+                timestamp: contract.testFlights[strFlight].timestamp,
+                premium: premium,
+                passenger: contract.passenger,
+            }
+
+            contract.buyInsurance(payload, (error, result) => {
+                console.log(error, result);
+                display('Passengers', 'Buy insurance', [ { label: 'Buy insurance', error: error, value: result} ]);
+            });
+
+            // let result = [adrAirline, strFlight, timestamp, passenger, premium];
+
+        });
 
 
 

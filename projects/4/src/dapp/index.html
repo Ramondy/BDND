@@ -36,13 +36,18 @@
             <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
         </div>
         <br><br>
-        <h2>Transaction History<span id="ftc-history"></span></h2>
+        <h2>Buy Insurance</h2>
         <div>
-            <ul id="ftc-events">
-                <!-- Events will appear here from app.js -->
-            </ul>
-            <br>
-            <hr>
+            <form id="buy-insurance">
+                <label for="strFlight">Flight</label>
+                <select name="strFlight" id="strFlight">
+                    <option value="AF2708">AF2708</option>
+                    <option value="AA2016">AA2016</option>
+                </select>
+                <label for="premium">Premium (in wei)</label>
+                <input type="text" id="premium" name="premium" placeholder="must be less than 1 ETH">
+                <input type="submit" value="Submit"/>
+            </form>
         </div>
     </main>
 

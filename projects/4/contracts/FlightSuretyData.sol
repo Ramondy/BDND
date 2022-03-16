@@ -244,11 +244,11 @@ contract FlightSuretyData {
    /**
     * @dev Triggered by front-end when passengers buy insurance
     */   
-    function buy (address adrAirline, string flight, uint256 timestamp) external requireIsOperational payable {
+    function buy (address adrAirline, string strFlight, uint256 timestamp) external requireIsOperational payable {
         require(msg.value <= MAX_PREMIUM, "Premium must be less than 1 ETH");
         require(msg.value > 0, "Premium must be more then zero");
 
-        bytes32 flightKey = getFlightKey(adrAirline, flight, timestamp);
+        bytes32 flightKey = getFlightKey(adrAirline, strFlight, timestamp);
         require(flights[flightKey].isRegistered == true, "Flight must be registered");
 
         insuredPassengers[flightKey].push(msg.sender);
