@@ -57,11 +57,7 @@ import './flightsurety.css';
             e.preventDefault();
 
             let strFlight = DOM.elid('strFlight').value;
-            // let adrAirline = contract.testFlights[strFlight].adrAirline;
-            // let timestamp = contract.testFlights[strFlight].timestamp;
-            //
             let premium = parseInt(DOM.elid('premium').value);
-            // let passenger = contract.passenger;
 
             let payload = {
                 strFlight: strFlight,
@@ -75,9 +71,6 @@ import './flightsurety.css';
                 console.log(error, result);
                 display('Passengers', 'Buy insurance', [ { label: 'Buy insurance', error: error, value: result} ]);
             });
-
-            // let result = [adrAirline, strFlight, timestamp, passenger, premium];
-
         });
 
 

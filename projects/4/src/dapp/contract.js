@@ -98,18 +98,22 @@ export default class Contract {
     buyInsurance(payload, callback) {
         let self = this;
 
-        // this.flightSuretyData.options.gas = 200000;
-        // console.log("hello world");
-        // callback();
+        this.flightSuretyApp.options.gas = 200000;
 
-        // this.flightSuretyApp.methods
-        //     .registerFlight(payload.adrAirline, payload.strFlight, payload.timestamp)
-        //     .send( {}, (error, result) => {
-        //         callback(error, result);
-        //     });
-
-        // { from: payload.passenger, value: payload.premium}
-
+        this.flightSuretyApp.methods
+            .registerFlight(payload.adrAirline, payload.strFlight, payload.timestamp)
+            .send( { from: payload.passenger }, (error, result) => {
+                if (error) {
+                    callback(error);
+                } else {
+                    console.log(result);
+                    this.flightSuretyData.methods
+                        .buy(payload.adrAirline, payload.strFlight, payload.timestamp)
+                        .send( { from: payload.passenger, value: payload.premium }, (error, result) => {
+                            callback(error, result);
+                })
+                }
+            });
     }
 
 
