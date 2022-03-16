@@ -84,6 +84,7 @@ contract FlightSuretyData {
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
 
+    // CONTRACT ADMIN
     /**
     * @dev Get operating status of contract
     * @return A bool that is the current operating status
@@ -113,6 +114,8 @@ contract FlightSuretyData {
         delete authorizedCallers[account];
     }
 
+    // INSURANCE FUND
+
 //    function getContractBalance() public view returns(uint256) {
 //        return address(this).balance;
 //    }
@@ -141,19 +144,15 @@ contract FlightSuretyData {
         mapAirlines[candidate].votes.push(voter);
     }
 
-    /**
-    * @dev Get a unique identifier for a particular flight
-    */
+    // FLIGHTS
     function getFlightKey (address airline, string memory flight, uint256 timestamp) pure private returns(bytes32) {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
     /********************************************************************************************/
-    /*                                     SMART CONTRACT FUNCTIONS                             */
+    /*                                     AIRLINES                                             */
     /********************************************************************************************/
 
-
-    // AIRLINES
     function registerAirline (address adrAirline)
         external requireCallerAuthorized requireIsOperational {
 
@@ -161,7 +160,6 @@ contract FlightSuretyData {
         emit AirlineRegistered(adrAirline);
 
     }
-
 
     /**
     * @dev Initial funding for the insurance. Unless there are too many delayed flights
@@ -178,8 +176,10 @@ contract FlightSuretyData {
         emit AirlineFunded(msg.sender);
     }
 
+    /********************************************************************************************/
+    /*                                     PASSENGERS                                             */
+    /********************************************************************************************/
 
-    // PASSENGERS
    /**
     * @dev Buy insurance for a flight
     *
@@ -187,8 +187,10 @@ contract FlightSuretyData {
     function buy () external requireCallerAuthorized requireIsOperational payable {
     }
 
+    /********************************************************************************************/
+    /*                                     INSURANCE FUND                                             */
+    /********************************************************************************************/
 
-    // INSURANCE CONTRACT
     /**
      *  @dev Credits payouts to insurees
     */
@@ -202,8 +204,6 @@ contract FlightSuretyData {
     function pay () external requireCallerAuthorized requireIsOperational {
     }
 
-
-    // FALLBACK
     /**
     * @dev Fallback function for funding smart contract.
     *

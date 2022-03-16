@@ -34,30 +34,6 @@ contract FlightSuretyApp {
 
  
     /********************************************************************************************/
-    /*                                       FUNCTION MODIFIERS                                 */
-    /********************************************************************************************/
-
-    /**
-    * @dev Modifier that requires the "operational" boolean variable to be "true"
-    *      This is used on all state changing functions to pause the contract in 
-    *      the event there is an issue that needs to be fixed
-    */
-    modifier requireIsOperational() 
-    {
-        require(isOperational() == true, "Contract is currently not operational");
-        _;
-    }
-
-    /**
-    * @dev Modifier that requires the "ContractOwner" account to be the function caller
-    */
-    modifier requireContractOwner()
-    {
-        require(msg.sender == contractOwner, "Caller is not contract owner");
-        _;
-    }
-
-    /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
     /********************************************************************************************/
 
@@ -73,16 +49,51 @@ contract FlightSuretyApp {
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
 
-    //event AirlineRegistered(address adrAirline);
+    // Event fired each time an oracle submits a response
+    event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
+
+    event OracleReport(address airline, string flight, uint256 timestamp, uint8 status);
+
+    // Event fired when flight status request is submitted
+    // Oracles track this and if they have a matching index they fetch data and submit a response
+    event OracleRequest(uint8 index, address airline, string flight, uint256 timestamp);
+
+
+    /********************************************************************************************/
+    /*                                       FUNCTION MODIFIERS                                 */
+    /********************************************************************************************/
+
+    /**
+    * @dev Modifier that requires the "operational" boolean variable to be "true"
+    *      This is used on all state changing functions to pause the contract in
+    *      the event there is an issue that needs to be fixed
+    */
+    modifier requireIsOperational()
+    {
+        require(isOperational() == true, "Contract is currently not operational");
+        _;
+    }
+
+    /**
+    * @dev Modifier that requires the "ContractOwner" account to be the function caller
+    */
+    modifier requireContractOwner()
+    {
+        require(msg.sender == contractOwner, "Caller is not contract owner");
+        _;
+    }
+
 
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
 
+    // CONTRACT ADMIN
     function isOperational() public view returns(bool) {
         return dataContract.isOperational();
     }
 
+    // INSURANCE FUND
     function isAirlineRegistered(address adrAirline) public view returns(bool) {
         return dataContract.isAirlineRegistered(adrAirline);
     }
@@ -91,6 +102,12 @@ contract FlightSuretyApp {
         return dataContract.hasAirlinePaidIn(adrAirline);
     }
 
+    // FLIGHTS
+    function getFlightKey (address airline, string flight, uint256 timestamp) pure private returns(bytes32) {
+        return keccak256(abi.encodePacked(airline, flight, timestamp));
+    }
+
+    // ORACLES
     // Returns array of three non-duplicating integers from 0-9
     function generateIndexes(address account) private returns (uint8[3]) {
         uint8[3] memory indexes;
@@ -124,12 +141,11 @@ contract FlightSuretyApp {
     }
 
     /********************************************************************************************/
-    /*                                     SMART CONTRACT FUNCTIONS                             */
+    /*                                     AIRLINES                             */
     /********************************************************************************************/
 
-    // AIRLINES
    /**
-    * @dev Add an airline to the registration queue
+    * @dev Register an airline with the insurance fund
     */   
     function registerAirline (address adrAirline) external requireIsOperational
     returns (bool success, uint256 votes) {
@@ -189,7 +205,11 @@ contract FlightSuretyApp {
     function registerFlight () external requireIsOperational {
 
     }
-    
+
+    /********************************************************************************************/
+    /*                                       INSURANCE FUND                                  */
+    /********************************************************************************************/
+
 
     /**
     * @dev Generate a request for oracles to fetch flight information
@@ -211,8 +231,9 @@ contract FlightSuretyApp {
 
     }
 
-
-    // ORACLE MANAGEMENT
+    /********************************************************************************************/
+    /*                                       ORACLES                                  */
+    /********************************************************************************************/
 
     // Incremented to add pseudo-randomness at various points
     uint8 private nonce = 0;    
@@ -245,15 +266,6 @@ contract FlightSuretyApp {
     // Key = hash(index, flight, timestamp)
     mapping(bytes32 => ResponseInfo) private oracleResponses;
 
-    // Event fired each time an oracle submits a response
-    event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
-
-    event OracleReport(address airline, string flight, uint256 timestamp, uint8 status);
-
-    // Event fired when flight status request is submitted
-    // Oracles track this and if they have a matching index
-    // they fetch data and submit a response
-    event OracleRequest(uint8 index, address airline, string flight, uint256 timestamp);
 
 
     // Register an oracle with the contract
@@ -323,22 +335,11 @@ contract FlightSuretyApp {
     }
 
 
-    function getFlightKey
-                        (
-                            address airline,
-                            string flight,
-                            uint256 timestamp
-                        )
-                        pure
-                        private
-                        returns(bytes32) 
-    {
-        return keccak256(abi.encodePacked(airline, flight, timestamp));
-    }
-    // end ORACLE MANAGEMENT
 }
 
-// Interface to Data contract
+    /********************************************************************************************/
+    /*                                       INTERFACE                                   */
+    /********************************************************************************************/
 
 contract FlightSuretyData_int {
     function isOperational() external view returns(bool);
