@@ -368,12 +368,95 @@ contract('Flight Surety Tests', async (accounts) => {
 
     });
 
+   it('(passengers) cannot purchase insurance if premium out of valid range', async() => {
+       // ARRANGE
+       let flight = config.testFlights.paid_in;
+       assert.equal(await config.flightSuretyData.isFlightRegisteredTest(flight.adrAirline, flight.strFlight, flight.timestamp), true, "Use registered flight for this test");
 
+       let passenger = accounts[6];
+       let premium = BigNumber(2 * config.weiMultiple); // 2 ETH - should revert
+
+       // ACT
+       let reversed = false;
+       try {
+           await config.flightSuretyData.buy(flight.adrAirline, flight.strFlight, flight.timestamp, { from: passenger, value: premium });
+       } catch(e) {
+           console.log(e.reason);
+           reversed = true;
+       }
+
+       // ASSERT
+       assert.equal(reversed, true, "buy should fail if premium too high");
+
+
+       // ARRANGE
+       premium = 0; // should revert
+       reversed = false;
+
+       // ACT
+       try {
+           await config.flightSuretyData.buy(flight.adrAirline, flight.strFlight, flight.timestamp, { from: passenger, value: premium });
+       } catch(e) {
+           console.log(e.reason);
+           reversed = true;
+       }
+
+       // ASSERT
+       assert.equal(reversed, true, "buy should fail if premium too low");
+
+   });
+
+   it('(passenger) cannot purchase insurance if flight not registered ', async() => {
+       // ARRANGE
+       let flight = config.testFlights.not_paid_in;
+       let passenger = accounts[6];
+
+       assert.equal(await config.flightSuretyData.isFlightRegisteredTest(flight.adrAirline, flight.strFlight, flight.timestamp), false, "Use NOT registered flight for this test");
+
+       premium = BigNumber(1 * config.weiMultiple); // 1 ETH should not revert
+       reversed = false;
+
+       // ACT
+       try {
+           await config.flightSuretyData.buy(flight.adrAirline, flight.strFlight, flight.timestamp, {
+               from: passenger,
+               value: premium
+           });
+       } catch (e) {
+           console.log(e.reason);
+           reversed = true;
+       }
+
+       // ASSERT
+       assert.equal(reversed, true, "buy should fail if flight not registered");
+
+   });
+
+   it('(passenger) can purchase insurance if flight registered and premium valid ', async() => {
+       // ARRANGE
+       let flight = config.testFlights.paid_in;
+       let passenger = accounts[6];
+
+       assert.equal(await config.flightSuretyData.isFlightRegisteredTest(flight.adrAirline, flight.strFlight, flight.timestamp), true, "Use registered flight for this test");
+
+       premium = BigNumber(1 * config.weiMultiple); // 1 ETH should not revert
+
+       // ACT
+
+        let tx = await config.flightSuretyData.buy(flight.adrAirline, flight.strFlight, flight.timestamp, {
+           from: passenger,
+           value: premium });
+
+       // ASSERT
+       truffleAssert.eventEmitted(tx, 'InsuranceSold');
+
+   });
 
     // template
-/*    it('(airline)xx ', async() => {
-        // ARRANGE
-        // ACT
-        // ASSERT
-    });*/
+/*   it('(airline)xx ', async() => {
+       // ARRANGE
+       // ACT
+       // ASSERT
+   });*/
+
 });
