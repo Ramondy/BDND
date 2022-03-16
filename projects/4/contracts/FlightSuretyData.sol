@@ -9,9 +9,12 @@ contract FlightSuretyData {
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
+    // CONTRACT ADMIN
     address private contractOwner; // Account used to deploy contract
     bool private operational; // Block all state changes throughout the contract if false
     mapping(address => bool) private authorizedCallers; // Forbid calls from unauthorized contracts
+
+    // INSURANCE FUND
 
     // Airlines are recorded as soon as they receive their first vote.
     // They need enough votes + deposit the seed money to vote and register flights
@@ -25,6 +28,30 @@ contract FlightSuretyData {
     address[] private lsPaidInAirlines;
 
     uint256 private constant SEED = 10 ether;
+    uint256 private constant MAX_PREMIUM = 1 ether;
+
+    // initial Flight information is statically stored in front-end
+    // it is used by passengers to purchase insurance - when they do:
+    // -- the flight info is passed through App using registerFlight
+    // -- and persisted here (unique)
+    // -- the payable transaction triggers addition to insuredPassengers mapping
+    // status code is fetched by App from oracles when passengers request it using front-end
+    struct Flight {
+        bool isRegistered;
+        address adrAirline;
+        string  strFlight;
+        uint256 timestamp;
+        uint8 statusCode;
+    }
+    mapping(bytes32 => Flight) private flights;
+
+    mapping(bytes32 => address[]) private insuredPassengers;
+
+    // when a passenger buys insurance using front-end:
+    // -- flight info is passed to App, then to Data (if new) : registerFlight() will persist flights
+    // -- payable transaction is passed to Data : buy() will persist insuredPassengers
+
+    // setFlightStatusCode() is external setter for statusCode, used by App after oracles respond
 
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
@@ -47,6 +74,8 @@ contract FlightSuretyData {
 
     event AirlineRegistered(address adrAirline);
     event AirlineFunded(address adrAirline);
+    event FlightRegistered(bytes32 flightKey);
+    event InsuranceSold(bytes32 flightKey, address insuredPassenger);
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -120,6 +149,8 @@ contract FlightSuretyData {
 //        return address(this).balance;
 //    }
 
+    /// AIRLINES
+
     function isAirlineRegistered (address adrAirline) external view requireIsOperational  // external ?
         returns (bool) {
             return mapAirlines[adrAirline].isRegistered;
@@ -144,10 +175,26 @@ contract FlightSuretyData {
         mapAirlines[candidate].votes.push(voter);
     }
 
-    // FLIGHTS
+    /// FLIGHTS
+    // this creates a unique key used to identity flights in mapping
     function getFlightKey (address airline, string memory flight, uint256 timestamp) pure private returns(bytes32) {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
+
+    function isFlightRegistered(bytes32 flightKey) external view requireCallerAuthorized requireIsOperational returns(bool) {
+        return flights[flightKey].isRegistered;
+    }
+
+    function isFlightRegisteredTest(address airline, string flight, uint256 timestamp) external view requireIsOperational returns(bool) {
+        bytes32 flightKey = getFlightKey (airline, flight, timestamp);
+        return flights[flightKey].isRegistered;
+    }
+
+
+    function setFlightStatusCode (bytes32 flightKey, uint8 flightStatus) external requireCallerAuthorized requireIsOperational {
+        flights[flightKey].statusCode = flightStatus;
+    }
+
 
     /********************************************************************************************/
     /*                                     AIRLINES                                             */
@@ -176,15 +223,36 @@ contract FlightSuretyData {
         emit AirlineFunded(msg.sender);
     }
 
+    /**
+    * @dev Triggered by App when passengers buy insurance using front-end
+    */
+    function registerFlight (address adrAirline, string strFlight, uint256 timestamp, bytes32 flightKey)
+    external requireCallerAuthorized requireIsOperational {
+
+        flights[flightKey].isRegistered = true;
+        flights[flightKey].adrAirline = adrAirline;
+        flights[flightKey].strFlight = strFlight;
+        flights[flightKey].timestamp = timestamp;
+
+        emit FlightRegistered(flightKey);
+    }
+
     /********************************************************************************************/
     /*                                     PASSENGERS                                             */
     /********************************************************************************************/
 
    /**
-    * @dev Buy insurance for a flight
-    *
+    * @dev Triggered by front-end when passengers buy insurance
     */   
-    function buy () external requireCallerAuthorized requireIsOperational payable {
+    function buy (address adrAirline, string flight, uint256 timestamp) external requireIsOperational payable {
+        require(msg.value <= MAX_PREMIUM, "Premium must be less than 1 ETH");
+        require(msg.value > 0, "Premium must be more then zero");
+
+        bytes32 flightKey = getFlightKey(adrAirline, flight, timestamp);
+        require(flights[flightKey].isRegistered == true, "Flight must be registered");
+
+        insuredPassengers[flightKey].push(msg.sender);
+        emit InsuranceSold(flightKey, msg.sender);
     }
 
     /********************************************************************************************/

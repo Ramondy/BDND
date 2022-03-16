@@ -1,6 +1,7 @@
 
 var Test = require('../config/testConfig.js');
 var BigNumber = require('bignumber.js');
+const truffleAssert = require('truffle-assertions');
 
 contract('Flight Surety Tests', async (accounts) => {
 
@@ -13,7 +14,7 @@ contract('Flight Surety Tests', async (accounts) => {
   /* Operations and Settings                                                              */
   /****************************************************************************************/
 
-    it(`(multiparty) has correct initial isOperational() value`, async function () {
+/*    it(`(multiparty) has correct initial isOperational() value`, async function () {
 
         // Get operating status
         let status = await config.flightSuretyApp.isOperational.call();
@@ -67,6 +68,7 @@ contract('Flight Surety Tests', async (accounts) => {
         await config.flightSuretyData.setOperatingStatus(true, { from : config.owner });
 
     });
+   */
 
     it(`firstAirline is properly registered at deployment`, async function () {
 
@@ -81,6 +83,7 @@ contract('Flight Surety Tests', async (accounts) => {
 
     });
 
+    /*
     it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
 
         // ARRANGE
@@ -234,10 +237,10 @@ contract('Flight Surety Tests', async (accounts) => {
             results[c] = await config.flightSuretyApp.hasAirlinePaidIn(contributors[c]);
             assert.equal(results[c], true, `registered airline #${c+1} should be able to fund the contract`);
         }
-    });
+   });
 
-    // next : test registration of additional airlines, require multiparty consensus
-    it('(airline) when 4 or more registered airlines, new candidate needs over 50% votes to be registered', async() => {
+   // Complex test scenario for registerAirline
+   it('(airline) when 4 or more registered airlines, new candidate needs over 50% votes to be registered', async() => {
         // ASSERT STATE
         let voters = [accounts[0], accounts[1], accounts[2], accounts[3]];
 
@@ -283,6 +286,7 @@ contract('Flight Surety Tests', async (accounts) => {
         result = await config.flightSuretyApp.isAirlineRegistered(candidate);
         assert.equal(result, true, "Candidate should be registered after 2 votes");
 
+        // ARRANGE
         let contribution = BigNumber(10 * config.weiMultiple);
 
         try {
@@ -291,7 +295,6 @@ contract('Flight Surety Tests', async (accounts) => {
                 console.log(e);
             }
 
-        // ARRANGE
         candidate = accounts[5]
 
         // ACT
@@ -321,7 +324,50 @@ contract('Flight Surety Tests', async (accounts) => {
         result = await config.flightSuretyApp.isAirlineRegistered(candidate);
         assert.equal(result, true, "Candidate should be registered after 3 votes");
 
+   });*/
+
+   it('(flights) flight cannot be registered if airline not paid-in', async() => {
+       // ARRANGE
+       let flight = config.testFlights.not_paid_in;
+       assert.equal(await config.flightSuretyApp.hasAirlinePaidIn(flight.adrAirline), false, "Use not paid-in Airline for this test");
+
+       // ACT
+       let reverted = false;
+       try {
+            await config.flightSuretyApp.registerFlight(flight.adrAirline, flight.strFlight, flight.timestamp);
+       } catch(e) {
+            console.log(e.reason);
+            reverted = true;
+       }
+
+       // ASSERT
+       assert.equal(reverted, true, "registerFlight should fail if airline not paid-in");
     });
+
+   it('(flights) flight can be registered ONCE if airline is paid-in', async() => {
+       // ARRANGE
+       let flight = config.testFlights.paid_in;
+       assert.equal(await config.flightSuretyApp.hasAirlinePaidIn(flight.adrAirline), true, "Use paid-in Airline for this test");
+
+       // ACT
+        try {
+            await config.flightSuretyApp.registerFlight(flight.adrAirline, flight.strFlight, flight.timestamp);
+        } catch(e) {
+            console.log(e.reason);
+        }
+
+        // ASSERT
+       let result = await config.flightSuretyData.isFlightRegisteredTest(flight.adrAirline, flight.strFlight, flight.timestamp);
+       assert.equal(result, true, "flight should be registered");
+
+       // ACT
+       let tx = await config.flightSuretyApp.registerFlight(flight.adrAirline, flight.strFlight, flight.timestamp);
+
+       // ASSERT
+       truffleAssert.eventEmitted(tx, 'DuplicateFlight');
+
+    });
+
 
 
     // template

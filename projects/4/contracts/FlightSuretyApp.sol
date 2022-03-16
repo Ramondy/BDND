@@ -24,13 +24,13 @@ contract FlightSuretyApp {
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
 
-    struct Flight {
-        bool isRegistered;
-        uint8 statusCode;
-        uint256 updatedTimestamp;
-        address airline;
-    }
-    mapping(bytes32 => Flight) private flights;
+//    struct Flight {
+//        bool isRegistered;
+//        uint8 statusCode;
+//        uint256 updatedTimestamp;
+//        address airline;
+//    }
+//    mapping(bytes32 => Flight) private flights;
 
  
     /********************************************************************************************/
@@ -48,6 +48,8 @@ contract FlightSuretyApp {
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
+
+    event DuplicateFlight(bytes32 flightKey);
 
     // Event fired each time an oracle submits a response
     event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
@@ -148,7 +150,7 @@ contract FlightSuretyApp {
     * @dev Register an airline with the insurance fund
     */   
     function registerAirline (address adrAirline) external requireIsOperational
-    returns (bool success, uint256 votes) {
+    returns (bool, uint256) {
 
         require(hasAirlinePaidIn(msg.sender), "Voter must be registered and paid-in");
         require(isAirlineRegistered(adrAirline) == false, "Airline is already registered");
@@ -200,10 +202,24 @@ contract FlightSuretyApp {
 
 
    /**
-    * @dev Register a future flight for insuring.
+    * @dev Triggered by passengers when they buy insurance using front-end
     */  
-    function registerFlight () external requireIsOperational {
+    function registerFlight (address adrAirline, string strFlight, uint256 timestamp)
+    external requireIsOperational {
 
+        // check is Airline is paid-in
+        require(hasAirlinePaidIn(adrAirline), "Airline must be paid-in");
+
+        // encode flightKey
+        bytes32 flightKey = getFlightKey(adrAirline, strFlight, timestamp);
+
+        // check if flight is already registered
+        if (dataContract.isFlightRegistered(flightKey) == false) {
+            dataContract.registerFlight(adrAirline, strFlight, timestamp, flightKey);
+
+        } else {
+            emit DuplicateFlight(flightKey);
+        }
     }
 
     /********************************************************************************************/
@@ -228,8 +244,9 @@ contract FlightSuretyApp {
     * @dev Called after oracle has updated flight status
     */
     function processFlightStatus(address airline, string memory flight, uint256 timestamp, uint8 statusCode) private requireIsOperational {
-
+        // will interact with dataContract.setFlightStatusCode ?
     }
+
 
     /********************************************************************************************/
     /*                                       ORACLES                                  */
@@ -352,4 +369,10 @@ contract FlightSuretyData_int {
 
     function isAirlineRegistered (address adrAirline) external view returns (bool);
     function hasAirlinePaidIn (address adrAirline) external view returns (bool);
+
+    function registerFlight (address adrAirline, string strFlight, uint256 timestamp, bytes32 flightKey) external;
+
+    function isFlightRegistered(bytes32 flightKey) external view returns (bool);
+
+    function setFlightStatusCode (bytes32 flightKey, uint8 flightStatus) external;
 }

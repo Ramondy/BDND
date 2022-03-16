@@ -19,6 +19,20 @@ var Config = async function(accounts) {
         "0x2f2899d6d35b1a48a4fbdc93a37a72f264a9fca7"
     ];
 
+    let testFlights = {
+        paid_in: {
+                    adrAirline: accounts[0], // paid-in airline
+                    strFlight: "AF2708",
+                    timestamp: Math.floor(Date.now() / 1000)
+                },
+        not_paid_in: {
+                    adrAirline: accounts[9], // NOT paid-in airline
+                    strFlight: "AA2016",
+                    timestamp: Math.floor(Date.now() / 1000)
+                }
+
+        }
+
 
     let owner = accounts[0];
     let firstAirline = accounts[0];
@@ -33,6 +47,7 @@ var Config = async function(accounts) {
         firstAirline: firstAirline,
         weiMultiple: (new BigNumber(10)).pow(18),
         testAddresses: testAddresses,
+        testFlights: testFlights,
         flightSuretyData: flightSuretyData,
         flightSuretyApp: flightSuretyApp
     }
