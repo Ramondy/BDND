@@ -75,6 +75,11 @@ contract FlightSuretyData {
     // Key = hash(index, flight, timestamp)
     mapping(bytes32 => ResponseInfo) private oracleResponses;
 
+    // Number of oracles that must respond for valid status
+    uint256 private constant MIN_RESPONSES = 3;
+
+
+
 
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
@@ -101,6 +106,9 @@ contract FlightSuretyData {
     event InsuranceSold(bytes32 flightKey, address insuredPassenger);
 
     event OracleRequest(uint8 index, address airline, string flight, uint256 timestamp);
+    event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
+    event OracleReport(address airline, string flight, uint256 timestamp, uint8 status);
+    event PaymentEvent(address airline, string flight, uint256 timestamp, uint8 status);
 
 
     /********************************************************************************************/
@@ -214,13 +222,13 @@ contract FlightSuretyData {
         return flights[flightKey].isRegistered;
     }
 
-//    function setFlightStatusCode (bytes32 flightKey, uint8 flightStatus) external requireCallerAuthorized requireIsOperational {
-//        flights[flightKey].statusCode = flightStatus;
-//    }
-
     // ORACLES
     // Incremented to add pseudo-randomness at various points
     uint8 private nonce = 0;
+
+    function getNonce() public view returns(uint8) {
+        return nonce;
+    }
 
     function generateIndexes(address account) private returns (uint8[3]) {
         uint8[3] memory indexes;
@@ -239,11 +247,12 @@ contract FlightSuretyData {
         return indexes;
     }
 
-    function getRandomIndex (address account) private returns (uint8) {
+    function getRandomIndex (address account) public returns (uint8) {
         uint8 maxValue = 10;
 
         // Pseudo random number...the incrementing nonce adds variation
-        uint8 random = uint8(uint256(keccak256(abi.encodePacked(blockhash(block.number - nonce++), account))) % maxValue);
+        nonce = nonce + 1;
+        uint8 random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp, nonce, account))) % maxValue);
 
         if (nonce > 250) {
             nonce = 0;  // Can only fetch blockhashes for last 256 blocks so we adapt
@@ -262,6 +271,7 @@ contract FlightSuretyData {
     returns (uint256) {
         return lsRegisteredOracles.length;
     }
+
 
     /********************************************************************************************/
     /*                                     AIRLINES                                             */
@@ -353,6 +363,49 @@ contract FlightSuretyData {
 
         emit OracleRequest(index, airline, flight, timestamp);
     }
+
+    // Called by oracle when a response is available to an outstanding request
+    // For the response to be accepted, there must be a pending request that is open
+    // and matches one of the three Indexes randomly assigned to the oracle at the
+    // time of registration (i.e. uninvited oracles are not welcome)
+    function submitOracleResponse (uint8 index, address airline, string flight, uint256 timestamp, uint8 statusCode)
+    external requireIsOperational {
+        require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
+
+        bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
+
+        if (oracleResponses[key].isOpen) {
+            oracleResponses[key].responses[statusCode].push(msg.sender);
+
+            // Information isn't considered verified until at least MIN_RESPONSES
+            // oracles respond with the *** same *** information
+            emit OracleReport(airline, flight, timestamp, statusCode);
+
+            if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
+
+                oracleResponses[key].isOpen = false;
+                flights[key].statusCode = statusCode;
+
+                emit FlightStatusInfo(airline, flight, timestamp, statusCode);
+
+                // Handle flight status as appropriate
+                processFlightStatus(airline, flight, timestamp, statusCode);
+            }
+        }
+
+    }
+
+        //
+//    /**
+//    * @dev Called after oracle has updated flight status
+//    */
+    function processFlightStatus(address airline, string memory flight, uint256 timestamp, uint8 statusCode) private requireIsOperational {
+
+        if (statusCode == 20) {
+            emit PaymentEvent(airline, flight, timestamp, statusCode);
+        }
+    }
+
 
 
     /********************************************************************************************/

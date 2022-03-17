@@ -26,6 +26,16 @@ let BigNumber = require('bignumber.js');
             console.log(error,result);
             display('Oracles', `Count registered oracles`, [ { label: 'Count registered oracles', error: error, value: result} ]);
         });
+
+        // contract.getNonce((error, result) => {
+        //     console.log(error,result);
+        //     display('Nonce', `Nonce`, [ { label: 'Nonce', error: error, value: result} ]);
+        // })
+
+        contract.getRandomIndex( (error, result) => {
+            console.log(error,result);
+            display('Random Index', `Random Index`, [ { label: 'Random Index', error: error, value: result} ]);
+        })
     
 
         DOM.elid('register-airline').addEventListener('click', () => {

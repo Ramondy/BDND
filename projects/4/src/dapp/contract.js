@@ -76,6 +76,22 @@ export default class Contract {
             .call({ from: self.owner }, callback);
     }
 
+    getNonce(callback) {
+        let self = this;
+        self.flightSuretyData.methods
+            .getNonce()
+            .call( { from: self.owner }, callback);
+    }
+
+    getRandomIndex(callback) {
+        let self = this;
+        self.flightSuretyData.options.gas = 200000;
+
+        self.flightSuretyData.methods
+            .getRandomIndex(self.owner)
+            .call( { from: self.owner }, callback);
+    }
+
     registerAirline(adrAirline, callback) {
         let self = this;
 
@@ -126,16 +142,16 @@ export default class Contract {
 
     fetchFlightStatus(strFlight, callback) {
         let self = this;
+
         let payload = {
             adrAirline: self.testFlights[strFlight].adrAirline,
             strFlight: strFlight,
-            timestamp: self.testFlights[strFlight].timestamp
-            //timestamp: Math.floor(Date.now() / 1000)
+            timestamp: Math.floor(Date.now() / 1000)
         }
 
         self.flightSuretyData.methods
             .fetchFlightStatus(payload.adrAirline, payload.strFlight, payload.timestamp)
-            .send({ from: self.owner }, (error, result) => {
+            .send({ from: self.owner, gas: 3000000 }, (error, result) => {
                 callback(error, payload);
             });
     }

@@ -15,22 +15,13 @@ contract FlightSuretyApp {
     FlightSuretyData_int dataContract; // used as handle for  Data functions
 
 
-    // Flight status codees
+    // Flight status codes
     uint8 private constant STATUS_CODE_UNKNOWN = 0;
     uint8 private constant STATUS_CODE_ON_TIME = 10;
     uint8 private constant STATUS_CODE_LATE_AIRLINE = 20; // triggers insurance pay out
     uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
     uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
-
-
-//    struct Flight {
-//        bool isRegistered;
-//        uint8 statusCode;
-//        uint256 updatedTimestamp;
-//        address airline;
-//    }
-//    mapping(bytes32 => Flight) private flights;
 
  
     /********************************************************************************************/
@@ -50,13 +41,6 @@ contract FlightSuretyApp {
     /********************************************************************************************/
 
     event DuplicateFlight(bytes32 flightKey);
-
-    // Event fired each time an oracle submits a response
-    event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
-
-    event OracleReport(address airline, string flight, uint256 timestamp, uint8 status);
-
-
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -213,50 +197,12 @@ contract FlightSuretyApp {
             emit DuplicateFlight(flightKey);
         }
     }
+}
 
     /********************************************************************************************/
     /*                                       ORACLES                                  */
     /********************************************************************************************/
 
-    // Number of oracles that must respond for valid status
-    uint256 private constant MIN_RESPONSES = 3;
-
-
-//
-//    /**
-//    * @dev Called after oracle has updated flight status
-//    */
-//    function processFlightStatus(address airline, string memory flight, uint256 timestamp, uint8 statusCode) private requireIsOperational {
-//        // will interact with dataContract.setFlightStatusCode ?
-//    }
-//
-//    // Called by oracle when a response is available to an outstanding request
-//    // For the response to be accepted, there must be a pending request that is open
-//    // and matches one of the three Indexes randomly assigned to the oracle at the
-//    // time of registration (i.e. uninvited oracles are not welcome)
-//    function submitOracleResponse (uint8 index, address airline, string flight, uint256 timestamp, uint8 statusCode)
-//    external requireIsOperational {
-//        require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
-//
-//        bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
-//        require(oracleResponses[key].isOpen, "Flight or timestamp do not match oracle request");
-//
-//        oracleResponses[key].responses[statusCode].push(msg.sender);
-//
-//        // Information isn't considered verified until at least MIN_RESPONSES
-//        // oracles respond with the *** same *** information
-//        emit OracleReport(airline, flight, timestamp, statusCode);
-//        if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
-//
-//            emit FlightStatusInfo(airline, flight, timestamp, statusCode);
-//
-//            // Handle flight status as appropriate
-//            processFlightStatus(airline, flight, timestamp, statusCode);
-//        }
-//    }
-
-
-}
 
     /********************************************************************************************/
     /*                                       INTERFACE                                   */
@@ -278,5 +224,4 @@ contract FlightSuretyData_int {
 
     function isFlightRegistered(bytes32 flightKey) external view returns (bool);
 
-    function setFlightStatusCode (bytes32 flightKey, uint8 flightStatus) external;
 }
