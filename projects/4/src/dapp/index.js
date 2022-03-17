@@ -32,11 +32,11 @@ let BigNumber = require('bignumber.js');
         //     display('Nonce', `Nonce`, [ { label: 'Nonce', error: error, value: result} ]);
         // })
 
-        contract.getRandomIndex( (error, result) => {
-            console.log(error,result);
-            display('Random Index', `Random Index`, [ { label: 'Random Index', error: error, value: result} ]);
-        })
-    
+        // contract.getRandomIndex( (error, result) => {
+        //     console.log(error,result);
+        //     display('Random Index', `Random Index`, [ { label: 'Random Index', error: error, value: result} ]);
+        // })
+        //
 
         DOM.elid('register-airline').addEventListener('click', () => {
             let adrAirline = DOM.elid('airline-address').value;
@@ -97,6 +97,14 @@ let BigNumber = require('bignumber.js');
             contract.fetchFlightStatus(strFlight, (error, result) => {
                 display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.strFlight + ' ' + result.timestamp} ]);
             });
+        })
+
+        DOM.elid('withdraw-credit').addEventListener('click', () => {
+            contract.pay(contract.passenger, (error, result) => {
+                console.log(error,result);
+                display('Withdrawal', 'Withdraw Credit', [ { label: 'Withdraw Credit', error: error, value: result} ]);
+            });
+
         })
     
     });

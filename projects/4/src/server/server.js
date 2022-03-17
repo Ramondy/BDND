@@ -39,7 +39,7 @@ flightSuretyData.events.OracleRequest({
                 // payload.status_code = getRandomInt(6) * 10;
                 // console.log(payload.status_code);
 
-                if (Math.random() < 0.8) {
+                if (Math.random() < 0.99) {
                     payload.statusCode = 20;
                 } else {
                     payload.statusCode = 0;
@@ -60,7 +60,14 @@ flightSuretyData.events.FlightStatusInfo({
         console.log(event)}
 );
 
-flightSuretyData.events.PaymentEvent({
+flightSuretyData.events.InsuranceCredit({
+    fromBlock: 0
+    }, function (error, event) {
+        if (error) console.log(error)
+        console.log(event)}
+);
+
+flightSuretyData.events.InsurancePayout({
     fromBlock: 0
     }, function (error, event) {
         if (error) console.log(error)

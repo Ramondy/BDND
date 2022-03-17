@@ -79,7 +79,18 @@ contract FlightSuretyData {
     uint256 private constant MIN_RESPONSES = 3;
 
 
+    // INSURANCE PAYOUTS
+    // maps a passenger to a credit balance
+    mapping(address => uint256) private accountBalances;
+    uint256 private constant PAYOUT_MULTIPLE = 150;
 
+    // Flight status codes
+    uint8 private constant STATUS_CODE_UNKNOWN = 0;
+    uint8 private constant STATUS_CODE_ON_TIME = 10;
+    uint8 private constant STATUS_CODE_LATE_AIRLINE = 20; // triggers insurance pay out
+    uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
+    uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
+    uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
@@ -108,8 +119,8 @@ contract FlightSuretyData {
     event OracleRequest(uint8 index, address airline, string flight, uint256 timestamp);
     event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
     event OracleReport(address airline, string flight, uint256 timestamp, uint8 status);
-    event PaymentEvent(address airline, string flight, uint256 timestamp, uint8 status);
-
+    event InsuranceCredit(address passenger, uint256 credit);
+    event InsurancePayout(address passenger, uint256 payout);
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -379,7 +390,7 @@ contract FlightSuretyData {
 
             // Information isn't considered verified until at least MIN_RESPONSES
             // oracles respond with the *** same *** information
-            emit OracleReport(airline, flight, timestamp, statusCode);
+            //emit OracleReport(airline, flight, timestamp, statusCode);
 
             if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
 
@@ -401,12 +412,18 @@ contract FlightSuretyData {
 //    */
     function processFlightStatus(address airline, string memory flight, uint256 timestamp, uint8 statusCode) private requireIsOperational {
 
-        if (statusCode == 20) {
-            emit PaymentEvent(airline, flight, timestamp, statusCode);
+        if (statusCode == STATUS_CODE_LATE_AIRLINE) {
+
+            bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+
+            for (uint c=0; c < insuredPassengers[flightKey].length; c++) {
+                address passenger = insuredPassengers[flightKey][c].passenger;
+                uint256 premium = insuredPassengers[flightKey][c].premium;
+
+                creditInsurees(passenger, premium);
+            }
         }
     }
-
-
 
     /********************************************************************************************/
     /*                                     INSURANCE FUND                                             */
@@ -415,19 +432,29 @@ contract FlightSuretyData {
     /**
      *  @dev Credits payouts to insurees
     */
-    function creditInsurees () external requireCallerAuthorized requireIsOperational {
+    function creditInsurees (address passenger, uint256 premium) private requireIsOperational {
+        uint256 credit = premium * PAYOUT_MULTIPLE / 100;
+
+        accountBalances[passenger] = accountBalances[passenger] + credit;
+        emit InsuranceCredit(passenger, credit);
     }
 
     /**
     * @dev Transfers eligible payout funds to insuree
-    *
     */
-    function pay () external requireCallerAuthorized requireIsOperational {
+    function pay() external requireIsOperational {
+
+        require(accountBalances[msg.sender] > 0, "No available balance");
+
+        uint256 payout = accountBalances[msg.sender];
+        accountBalances[msg.sender] = 0;
+        msg.sender.transfer(payout);
+
+        emit InsurancePayout(msg.sender, payout);
     }
 
     /**
     * @dev Fallback function for funding smart contract.
-    *
     */
     function() external payable {
     }

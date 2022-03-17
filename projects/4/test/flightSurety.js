@@ -14,7 +14,7 @@ contract('Flight Surety Tests', async (accounts) => {
   /* Operations and Settings                                                              */
   /****************************************************************************************/
 
-/*    it(`(multiparty) has correct initial isOperational() value`, async function () {
+    it(`(multiparty) has correct initial isOperational() value`, async function () {
 
         // Get operating status
         let status = await config.flightSuretyApp.isOperational.call();
@@ -68,7 +68,6 @@ contract('Flight Surety Tests', async (accounts) => {
         await config.flightSuretyData.setOperatingStatus(true, { from : config.owner });
 
     });
-   */
 
     it(`firstAirline is properly registered at deployment`, async function () {
 
@@ -83,7 +82,6 @@ contract('Flight Surety Tests', async (accounts) => {
 
     });
 
-    /*
     it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
 
         // ARRANGE
@@ -324,7 +322,7 @@ contract('Flight Surety Tests', async (accounts) => {
         result = await config.flightSuretyApp.isAirlineRegistered(candidate);
         assert.equal(result, true, "Candidate should be registered after 3 votes");
 
-   });*/
+   });
 
    it('(flights) flight cannot be registered if airline not paid-in', async() => {
        // ARRANGE

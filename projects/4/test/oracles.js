@@ -62,7 +62,6 @@ contract('Oracles', async (accounts) => {
           // Enable this when debugging
           //  console.log('\nError', idx, oracleIndexes[idx].toNumber(), flight, timestamp);
         }
-
       }
     }
   });

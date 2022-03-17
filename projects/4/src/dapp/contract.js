@@ -16,6 +16,7 @@ export default class Contract {
         this.firstAirline = null;
         this.nextAirlines = [];
         this.passengers = [];
+        this.passenger = null;
         this.testFlights = {};
         this.reg_airlines_count = 0;
     }
@@ -139,14 +140,13 @@ export default class Contract {
             });
     }
 
-
     fetchFlightStatus(strFlight, callback) {
         let self = this;
 
         let payload = {
             adrAirline: self.testFlights[strFlight].adrAirline,
             strFlight: strFlight,
-            timestamp: Math.floor(Date.now() / 1000)
+            timestamp: self.testFlights[strFlight].timestamp,
         }
 
         self.flightSuretyData.methods
@@ -154,5 +154,10 @@ export default class Contract {
             .send({ from: self.owner, gas: 3000000 }, (error, result) => {
                 callback(error, payload);
             });
+    }
+
+    pay(passenger) {
+        let self = this;
+        self.flightSuretyData.methods.pay().send( { from: passenger, gas: 3000000 });
     }
 }

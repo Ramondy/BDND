@@ -14,15 +14,6 @@ contract FlightSuretyApp {
     address private contractOwner;
     FlightSuretyData_int dataContract; // used as handle for  Data functions
 
-
-    // Flight status codes
-    uint8 private constant STATUS_CODE_UNKNOWN = 0;
-    uint8 private constant STATUS_CODE_ON_TIME = 10;
-    uint8 private constant STATUS_CODE_LATE_AIRLINE = 20; // triggers insurance pay out
-    uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
-    uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
-    uint8 private constant STATUS_CODE_LATE_OTHER = 50;
-
  
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
