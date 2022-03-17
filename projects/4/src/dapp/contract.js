@@ -72,7 +72,7 @@ export default class Contract {
     registerAirline(adrAirline, callback) {
         let self = this;
 
-        this.flightSuretyApp.options.gas = 200000;
+        self.flightSuretyApp.options.gas = 200000;
 
         self.flightSuretyApp.methods
             .registerAirline(adrAirline)
@@ -85,7 +85,7 @@ export default class Contract {
     fundAirline(adrAirline, callback) {
         let self = this;
 
-        this.flightSuretyData.options.gas = 200000;
+        self.flightSuretyData.options.gas = 200000;
 
         self.flightSuretyData.methods
             .fund()
@@ -98,9 +98,9 @@ export default class Contract {
     buyInsurance(payload, callback) {
         let self = this;
 
-        this.flightSuretyApp.options.gas = 200000;
+        self.flightSuretyApp.options.gas = 200000;
 
-        this.flightSuretyApp.methods
+        self.flightSuretyApp.methods
             .registerFlight(payload.adrAirline, payload.strFlight, payload.timestamp)
             .send( { from: payload.passenger }, (error, result) => {
                 if (error) {
@@ -117,16 +117,17 @@ export default class Contract {
     }
 
 
-    fetchFlightStatus(flight, callback) {
+    fetchFlightStatus(strFlight, callback) {
         let self = this;
         let payload = {
-            airline: self.airlines[0],
-            flight: flight,
-            timestamp: Math.floor(Date.now() / 1000)
+            adrAirline: self.testFlights[strFlight].adrAirline,
+            strFlight: strFlight,
+            timestamp: self.testFlights[strFlight].timestamp
+            //timestamp: Math.floor(Date.now() / 1000)
         } 
         self.flightSuretyApp.methods
-            .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
-            .send({ from: self.owner}, (error, result) => {
+            .fetchFlightStatus(payload.adrAirline, payload.strFlight, payload.timestamp)
+            .send({ from: self.owner }, (error, result) => {
                 callback(error, payload);
             });
     }

@@ -29,22 +29,23 @@
             <label class="form">Airline</label> <input type="text" id="airline-address"> <btn class="btn btn-primary" id="register-airline">Register Airline Manually</btn>
         </div>
         <div class="row top-20">
-            <label>Airline</label> <btn class="btn btn-primary" id="register-airlines">Register 3 Airlines</btn>
+            <label class="form">Airline</label> <btn class="btn btn-primary" id="register-airlines">Register 3 Airlines</btn>
         </div>
         <div class="row top-20">
-            <label>Airline</label> <btn class="btn btn-primary" id="fund-airlines">Fund 3 Airlines</btn>
+            <label class="form">Airline</label> <btn class="btn btn-primary" id="fund-airlines">Fund 3 Airlines</btn>
         </div>
 
         <br><br>
         <h2>Passengers</h2>
-        <div>
+        <div class="row top-20">
             <form id="buy-insurance">
-                <label for="strFlight">Flight</label>
+                <label class="form" for="strFlight">Flight</label>
                 <select name="strFlight" id="strFlight">
                     <option value="AF2708">AF2708 - Air France - Paris-New York - Mar 31, 2022 - 09:10</option>
                     <option value="AA2016">AA2016 - American Airlines - Paris-New York - Mar 31, 2022 - 08:50</option>
                 </select>
-                <label for="premium">Premium (in wei)</label>
+                <br>
+                <label class="form" for="premium">Premium (in wei)</label>
                 <input type="text" id="premium" name="premium" placeholder="must be less than 1 ETH">
                 <input type="submit" value="Buy Insurance"/>
             </form>
@@ -52,7 +53,15 @@
         <br><br>
         <h2>Submit to Oracles</h2>
         <div class="row top-20">
-            <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+            <form id="ask-oracles">
+                <label class="form" for="flight-number">Flight</label>
+                <select name="flight-number" id="flight-number">
+                        <option value="AF2708">AF2708 - Air France - Paris-New York - Mar 31, 2022 - 09:10</option>
+                        <option value="AA2016">AA2016 - American Airlines - Paris-New York - Mar 31, 2022 - 08:50</option>
+                </select>
+                <input type="submit" value="Ask Oracles"/>
+            </form>
+<!--            <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>-->
         </div>
     </main>
 

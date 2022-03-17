@@ -74,14 +74,14 @@ let BigNumber = require('bignumber.js');
             });
         });
 
-
-
         // User-submitted transaction
-        DOM.elid('submit-oracle').addEventListener('click', () => {
-            let flight = DOM.elid('flight-number').value;
+        DOM.elid('ask-oracles').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            let strFlight = DOM.elid('flight-number').value;
             // Write transaction
-            contract.fetchFlightStatus(flight, (error, result) => {
-                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
+            contract.fetchFlightStatus(strFlight, (error, result) => {
+                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.strFlight + ' ' + result.timestamp} ]);
             });
         })
     
