@@ -62,6 +62,19 @@ contract FlightSuretyData {
 
     uint256 public constant REGISTRATION_FEE = 1 ether;
 
+    // ORACLE RESPONSES
+    struct ResponseInfo {
+        address requester;                              // Account that requested status
+        bool isOpen;                                    // If open, oracle responses are accepted
+        mapping(uint8 => address[]) responses;          // Mapping key is the status code reported
+                                                        // This lets us group responses and identify
+                                                        // the response that majority of the oracles
+    }
+
+    // Track all oracle responses
+    // Key = hash(index, flight, timestamp)
+    mapping(bytes32 => ResponseInfo) private oracleResponses;
+
 
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
@@ -86,6 +99,9 @@ contract FlightSuretyData {
     event AirlineFunded(address adrAirline);
     event FlightRegistered(bytes32 flightKey);
     event InsuranceSold(bytes32 flightKey, address insuredPassenger);
+
+    event OracleRequest(uint8 index, address airline, string flight, uint256 timestamp);
+
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -325,6 +341,19 @@ contract FlightSuretyData {
         lsRegisteredOracles.push(msg.sender);
     }
 
+    /**
+    * @dev Generate a request for oracles to fetch flight information
+    */
+    function fetchFlightStatus (address airline, string flight, uint256 timestamp) external requireIsOperational {
+        uint8 index = getRandomIndex(msg.sender);
+
+        // Generate a unique key for storing the request
+        bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
+        oracleResponses[key] = ResponseInfo({requester: msg.sender, isOpen: true});
+
+        emit OracleRequest(index, airline, flight, timestamp);
+    }
+
 
     /********************************************************************************************/
     /*                                     INSURANCE FUND                                             */
@@ -337,8 +366,8 @@ contract FlightSuretyData {
     }
 
     /**
-     *  @dev Transfers eligible payout funds to insuree
-     *
+    * @dev Transfers eligible payout funds to insuree
+    *
     */
     function pay () external requireCallerAuthorized requireIsOperational {
     }

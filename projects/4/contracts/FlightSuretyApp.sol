@@ -56,9 +56,6 @@ contract FlightSuretyApp {
 
     event OracleReport(address airline, string flight, uint256 timestamp, uint8 status);
 
-    // Event fired when flight status request is submitted
-    // Oracles track this and if they have a matching index they fetch data and submit a response
-    event OracleRequest(uint8 index, address airline, string flight, uint256 timestamp);
 
 
     /********************************************************************************************/
@@ -224,33 +221,7 @@ contract FlightSuretyApp {
     // Number of oracles that must respond for valid status
     uint256 private constant MIN_RESPONSES = 3;
 
-    // Model for responses from oracles
-    struct ResponseInfo {
-        address requester;                              // Account that requested status
-        bool isOpen;                                    // If open, oracle responses are accepted
-        mapping(uint8 => address[]) responses;          // Mapping key is the status code reported
-                                                        // This lets us group responses and identify
-                                                        // the response that majority of the oracles
-    }
 
-    // Track all oracle responses
-    // Key = hash(index, flight, timestamp)
-    mapping(bytes32 => ResponseInfo) private oracleResponses;
-
-
-
-//    /**
-//    * @dev Generate a request for oracles to fetch flight information
-//    */
-//    function fetchFlightStatus (address airline, string flight, uint256 timestamp) external requireIsOperational {
-//        uint8 index = getRandomIndex(msg.sender);
-//
-//        // Generate a unique key for storing the request
-//        bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
-//        oracleResponses[key] = ResponseInfo({requester: msg.sender, isOpen: true});
-//
-//        emit OracleRequest(index, airline, flight, timestamp);
-//    }
 //
 //    /**
 //    * @dev Called after oracle has updated flight status

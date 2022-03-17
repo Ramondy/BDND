@@ -131,8 +131,9 @@ export default class Contract {
             strFlight: strFlight,
             timestamp: self.testFlights[strFlight].timestamp
             //timestamp: Math.floor(Date.now() / 1000)
-        } 
-        self.flightSuretyApp.methods
+        }
+
+        self.flightSuretyData.methods
             .fetchFlightStatus(payload.adrAirline, payload.strFlight, payload.timestamp)
             .send({ from: self.owner }, (error, result) => {
                 callback(error, payload);
