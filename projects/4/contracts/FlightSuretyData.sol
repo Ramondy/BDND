@@ -45,7 +45,14 @@ contract FlightSuretyData {
     }
     mapping(bytes32 => Flight) private flights;
 
-    mapping(bytes32 => address[]) private insuredPassengers;
+    //mapping(bytes32 => address[]) private insuredPassengers;
+
+    struct Contract {
+        address passenger;
+        uint256 premium;
+    }
+
+    mapping(bytes32 => Contract[]) private insuredPassengers;
 
     // when a passenger buys insurance using front-end:
     // -- flight info is passed to App, then to Data (if new) : registerFlight() will persist flights
@@ -251,7 +258,11 @@ contract FlightSuretyData {
         bytes32 flightKey = getFlightKey(adrAirline, strFlight, timestamp);
         require(flights[flightKey].isRegistered == true, "Flight must be registered");
 
-        insuredPassengers[flightKey].push(msg.sender);
+        Contract memory newContract;
+        newContract.passenger = msg.sender;
+        newContract.premium = msg.value;
+
+        insuredPassengers[flightKey].push(newContract);
         emit InsuranceSold(flightKey, msg.sender);
     }
 

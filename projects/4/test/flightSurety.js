@@ -75,7 +75,7 @@ contract('Flight Surety Tests', async (accounts) => {
         let registered  = await config.flightSuretyApp.isAirlineRegistered(config.firstAirline);
         assert.equal(registered, true, "firstAirline is not registered");
 
-        let contribution = BigNumber(10 * config.weiMultiple);
+        let contribution = new BigNumber(10 * config.weiMultiple);
         await config.flightSuretyData.fund({from: config.firstAirline, value: contribution});
 
         let paidIn = await config.flightSuretyApp.hasAirlinePaidIn(config.firstAirline);
@@ -198,7 +198,7 @@ contract('Flight Surety Tests', async (accounts) => {
     it('(airline) an airline can only fund once', async() => {
         // ARRANGE
         let contributor = accounts[0];
-        let contribution_duplicate = BigNumber(10 * config.weiMultiple);
+        let contribution_duplicate = new BigNumber(10 * config.weiMultiple);
 
         // ACT
         let reverted = false;
@@ -219,7 +219,7 @@ contract('Flight Surety Tests', async (accounts) => {
 
        // ARRANGE
         let contributors = [accounts[1], accounts[2], accounts[3]]
-        let contribution = BigNumber(10 * config.weiMultiple);
+        let contribution = new BigNumber(10 * config.weiMultiple);
 
         for (let c=0; c < contributors.length; c++) {
             try {
@@ -287,7 +287,7 @@ contract('Flight Surety Tests', async (accounts) => {
         assert.equal(result, true, "Candidate should be registered after 2 votes");
 
         // ARRANGE
-        let contribution = BigNumber(10 * config.weiMultiple);
+        let contribution = new BigNumber(10 * config.weiMultiple);
 
         try {
                 await config.flightSuretyData.fund({from: candidate, value: contribution});
@@ -374,7 +374,7 @@ contract('Flight Surety Tests', async (accounts) => {
        assert.equal(await config.flightSuretyData.isFlightRegisteredTest(flight.adrAirline, flight.strFlight, flight.timestamp), true, "Use registered flight for this test");
 
        let passenger = accounts[6];
-       let premium = BigNumber(2 * config.weiMultiple); // 2 ETH - should revert
+       let premium = new BigNumber(2 * config.weiMultiple); // 2 ETH - should revert
 
        // ACT
        let reversed = false;
@@ -413,7 +413,7 @@ contract('Flight Surety Tests', async (accounts) => {
 
        assert.equal(await config.flightSuretyData.isFlightRegisteredTest(flight.adrAirline, flight.strFlight, flight.timestamp), false, "Use NOT registered flight for this test");
 
-       premium = BigNumber(1 * config.weiMultiple); // 1 ETH should not revert
+       premium = new BigNumber(1 * config.weiMultiple); // 1 ETH should not revert
        reversed = false;
 
        // ACT
@@ -439,7 +439,7 @@ contract('Flight Surety Tests', async (accounts) => {
 
        assert.equal(await config.flightSuretyData.isFlightRegisteredTest(flight.adrAirline, flight.strFlight, flight.timestamp), true, "Use registered flight for this test");
 
-       premium = BigNumber(1 * config.weiMultiple); // 1 ETH should not revert
+       premium = new BigNumber(1 * config.weiMultiple); // 1 ETH should not revert
 
        // ACT
 

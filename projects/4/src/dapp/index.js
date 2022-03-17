@@ -2,6 +2,7 @@
 import DOM from './dom';
 import Contract from './contract';
 import './flightsurety.css';
+let BigNumber = require('bignumber.js');
 
 
 (async() => {
@@ -57,7 +58,7 @@ import './flightsurety.css';
             e.preventDefault();
 
             let strFlight = DOM.elid('strFlight').value;
-            let premium = parseInt(DOM.elid('premium').value);
+            let premium = new BigNumber(parseInt(DOM.elid('premium').value));
 
             let payload = {
                 strFlight: strFlight,
