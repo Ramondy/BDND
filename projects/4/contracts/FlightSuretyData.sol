@@ -14,8 +14,7 @@ contract FlightSuretyData {
     bool private operational; // Block all state changes throughout the contract if false
     mapping(address => bool) private authorizedCallers; // Forbid calls from unauthorized contracts
 
-    // INSURANCE FUND
-
+    // AIRLINES
     // Airlines are recorded as soon as they receive their first vote.
     // They need enough votes + deposit the seed money to vote and register flights
     struct Airline {
@@ -28,14 +27,9 @@ contract FlightSuretyData {
     address[] private lsPaidInAirlines;
 
     uint256 private constant SEED = 10 ether;
-    uint256 private constant MAX_PREMIUM = 1 ether;
 
-    // initial Flight information is statically stored in front-end
-    // it is used by passengers to purchase insurance - when they do:
-    // -- the flight info is passed through App using registerFlight
-    // -- and persisted here (unique)
-    // -- the payable transaction triggers addition to insuredPassengers mapping
-    // status code is fetched by App from oracles when passengers request it using front-end
+
+    // FLIGHTS
     struct Flight {
         bool isRegistered;
         address adrAirline;
@@ -45,8 +39,8 @@ contract FlightSuretyData {
     }
     mapping(bytes32 => Flight) private flights;
 
-    //mapping(bytes32 => address[]) private insuredPassengers;
 
+    // INSURANCE CONTRACTS
     struct Contract {
         address passenger;
         uint256 premium;
@@ -54,11 +48,20 @@ contract FlightSuretyData {
 
     mapping(bytes32 => Contract[]) private insuredPassengers;
 
-    // when a passenger buys insurance using front-end:
-    // -- flight info is passed to App, then to Data (if new) : registerFlight() will persist flights
-    // -- payable transaction is passed to Data : buy() will persist insuredPassengers
+    uint256 private constant MAX_PREMIUM = 1 ether;
 
-    // setFlightStatusCode() is external setter for statusCode, used by App after oracles respond
+
+    // ORACLES
+    struct Oracle {
+        bool isRegistered;
+        uint8[3] indexes;
+    }
+
+    mapping(address => Oracle) private oracles;
+    address[] private lsRegisteredOracles;
+
+    uint256 public constant REGISTRATION_FEE = 1 ether;
+
 
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
@@ -150,13 +153,11 @@ contract FlightSuretyData {
         delete authorizedCallers[account];
     }
 
-    // INSURANCE FUND
-
 //    function getContractBalance() public view returns(uint256) {
 //        return address(this).balance;
 //    }
 
-    /// AIRLINES
+    // AIRLINES
 
     function isAirlineRegistered (address adrAirline) external view requireIsOperational  // external ?
         returns (bool) {
@@ -173,7 +174,7 @@ contract FlightSuretyData {
         return mapAirlines[adrAirline].votes;
     }
 
-    function countPaidAirlines() external view requireCallerAuthorized requireIsOperational
+    function countPaidAirlines() public view requireIsOperational
     returns (uint256) {
         return lsPaidInAirlines.length;
     }
@@ -182,7 +183,7 @@ contract FlightSuretyData {
         mapAirlines[candidate].votes.push(voter);
     }
 
-    /// FLIGHTS
+    // FLIGHTS
     // this creates a unique key used to identity flights in mapping
     function getFlightKey (address airline, string memory flight, uint256 timestamp) pure private returns(bytes32) {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
@@ -197,11 +198,54 @@ contract FlightSuretyData {
         return flights[flightKey].isRegistered;
     }
 
+//    function setFlightStatusCode (bytes32 flightKey, uint8 flightStatus) external requireCallerAuthorized requireIsOperational {
+//        flights[flightKey].statusCode = flightStatus;
+//    }
 
-    function setFlightStatusCode (bytes32 flightKey, uint8 flightStatus) external requireCallerAuthorized requireIsOperational {
-        flights[flightKey].statusCode = flightStatus;
+    // ORACLES
+    // Incremented to add pseudo-randomness at various points
+    uint8 private nonce = 0;
+
+    function generateIndexes(address account) private returns (uint8[3]) {
+        uint8[3] memory indexes;
+        indexes[0] = getRandomIndex(account);
+
+        indexes[1] = indexes[0];
+        while(indexes[1] == indexes[0]) {
+            indexes[1] = getRandomIndex(account);
+        }
+
+        indexes[2] = indexes[1];
+        while((indexes[2] == indexes[0]) || (indexes[2] == indexes[1])) {
+            indexes[2] = getRandomIndex(account);
+        }
+
+        return indexes;
     }
 
+    function getRandomIndex (address account) private returns (uint8) {
+        uint8 maxValue = 10;
+
+        // Pseudo random number...the incrementing nonce adds variation
+        uint8 random = uint8(uint256(keccak256(abi.encodePacked(blockhash(block.number - nonce++), account))) % maxValue);
+
+        if (nonce > 250) {
+            nonce = 0;  // Can only fetch blockhashes for last 256 blocks so we adapt
+        }
+
+        return random;
+    }
+
+    function getMyIndexes() view external returns(uint8[3]) {
+        require(oracles[msg.sender].isRegistered, "Not registered as an oracle");
+
+        return oracles[msg.sender].indexes;
+    }
+
+    function countRegisteredOracles() public view requireIsOperational
+    returns (uint256) {
+        return lsRegisteredOracles.length;
+    }
 
     /********************************************************************************************/
     /*                                     AIRLINES                                             */
@@ -265,6 +309,22 @@ contract FlightSuretyData {
         insuredPassengers[flightKey].push(newContract);
         emit InsuranceSold(flightKey, msg.sender);
     }
+
+    /********************************************************************************************/
+    /*                                       ORACLES                                  */
+    /********************************************************************************************/
+
+    // Register an oracle with the contract
+    function registerOracle() external payable requireIsOperational {
+
+        require(msg.value >= REGISTRATION_FEE, "Registration fee is required");
+
+        uint8[3] memory indexes = generateIndexes(msg.sender);
+
+        oracles[msg.sender] = Oracle({isRegistered: true, indexes: indexes});
+        lsRegisteredOracles.push(msg.sender);
+    }
+
 
     /********************************************************************************************/
     /*                                     INSURANCE FUND                                             */

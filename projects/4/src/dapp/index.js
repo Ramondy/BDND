@@ -17,10 +17,14 @@ let BigNumber = require('bignumber.js');
             display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
         });
 
-
-        contract.hasAirlinePaidIn(0, (error, result) => {
+        contract.countPaidAirlines((error, result) => {
             console.log(error,result);
-            display('Airlines', `Check if airline has paid-in`, [ { label: 'hasAirlinePaidIn', error: error, value: result} ]);
+            display('Airlines', `Count paid-in airlines`, [ { label: 'Count paid-in airlines', error: error, value: result} ]);
+        });
+
+        contract.countRegisteredOracles((error, result) => {
+            console.log(error,result);
+            display('Oracles', `Count registered oracles`, [ { label: 'Count registered oracles', error: error, value: result} ]);
         });
     
 

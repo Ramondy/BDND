@@ -62,10 +62,17 @@ export default class Contract {
             .call({ from: self.owner}, callback);
     }
 
-    hasAirlinePaidIn(index, callback) {
+    countPaidAirlines(callback) {
        let self = this;
-       self.flightSuretyApp.methods
-            .hasAirlinePaidIn(self.nextAirlines[index]) //
+       self.flightSuretyData.methods
+            .countPaidAirlines()
+            .call({ from: self.owner }, callback);
+    }
+
+    countRegisteredOracles(callback) {
+       let self = this;
+       self.flightSuretyData.methods
+            .countRegisteredOracles()
             .call({ from: self.owner }, callback);
     }
 

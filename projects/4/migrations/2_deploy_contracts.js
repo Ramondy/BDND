@@ -1,7 +1,7 @@
 const FlightSuretyApp = artifacts.require("FlightSuretyApp");
 const FlightSuretyData = artifacts.require("FlightSuretyData");
 const fs = require('fs');
-var BigNumber = require('bignumber.js');
+let BigNumber = require('bignumber.js');
 
 let App, Data;
 
@@ -17,6 +17,11 @@ module.exports = function(deployer, network, accounts) {
             })
             .then(() => {
                 Data.fund({ from: accounts[0], value: BigNumber(10 * BigNumber(10).pow(18)) });
+            })
+            .then(() => {
+                for (let c=0; c<accounts.length; c++) {
+                    Data.registerOracle({ from: accounts[c], value: BigNumber(1 * BigNumber(10).pow(18)) } );
+                }
             })
             .then(() => {
                 let config = {
