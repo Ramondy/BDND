@@ -94,7 +94,7 @@ let BigNumber = require('bignumber.js');
 function display(title, description, results) {
     let displayDiv = DOM.elid("display-wrapper");
     let section = DOM.section();
-    section.appendChild(DOM.h2(title));
+    //section.appendChild(DOM.h5(title));
     section.appendChild(DOM.h5(description));
     results.map((result) => {
         let row = section.appendChild(DOM.div({className:'row'}));

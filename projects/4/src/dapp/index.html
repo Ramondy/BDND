@@ -20,9 +20,11 @@
     </nav>
 
     <main class="container">
-
+        <h2>Contract Admin</h2>
         <div id="display-wrapper" class="top-20">
         </div>
+
+        <h2>Airlines</h2>
         <div class="row top-20">
             <label class="form">Airline</label> <input type="text" id="airline-address"> <btn class="btn btn-primary" id="register-airline">Register Airline Manually</btn>
         </div>
@@ -32,11 +34,9 @@
         <div class="row top-20">
             <label>Airline</label> <btn class="btn btn-primary" id="fund-airlines">Fund 3 Airlines</btn>
         </div>
-        <div class="row top-20">
-            <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
-        </div>
+
         <br><br>
-        <h2>Buy Insurance</h2>
+        <h2>Passenger: Buy Insurance</h2>
         <div>
             <form id="buy-insurance">
                 <label for="strFlight">Flight</label>
@@ -48,6 +48,11 @@
                 <input type="text" id="premium" name="premium" placeholder="must be less than 1 ETH">
                 <input type="submit" value="Submit"/>
             </form>
+        </div>
+        <br><br>
+        <h2>Submit to Oracles</h2>
+        <div class="row top-20">
+            <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
         </div>
     </main>
 
