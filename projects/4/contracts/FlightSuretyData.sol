@@ -433,9 +433,9 @@ contract FlightSuretyData {
      *  @dev Credits payouts to insurees
     */
     function creditInsurees (address passenger, uint256 premium) private requireIsOperational {
-        uint256 credit = premium * PAYOUT_MULTIPLE / 100;
+        uint256 credit = premium.mul(PAYOUT_MULTIPLE).div(100);
 
-        accountBalances[passenger] = accountBalances[passenger] + credit;
+        accountBalances[passenger] = accountBalances[passenger].add(credit);
         emit InsuranceCredit(passenger, credit);
     }
 
