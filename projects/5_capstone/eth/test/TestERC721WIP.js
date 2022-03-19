@@ -48,12 +48,16 @@ contract('TestERC721WIP', accounts => {
             }
         })
 
+        it('should return total supply', async function () {
+            assert.equal(await this.contract.totalSupply(), tokenIds.length, "enumerable does not work");
+        })
+
         it('should get token balance', async function () {
             assert.equal(await this.contract.balanceOf(account_one), tokenIds.length, "mint does not work");
 
         })
 
-        it('should get owner', async function () {
+        it('should return contract owner', async function () {
             for (c=0; c<tokenIds.length; c++) {
                 assert.equal(await this.contract.ownerOf(tokenIds[c]), account_one, "getOwner does not work");
             }
@@ -65,6 +69,18 @@ contract('TestERC721WIP', accounts => {
 
             assert.equal(await this.contract.ownerOf(tokenIds[4]), account_two, "safeTransferFrom does not work");
             assert.equal(await this.contract.balanceOf(account_two), 1, "safeTransferFrom does not work");
+
+        })
+
+        it('should fail when minting when address is not contract owner', async function () {
+            let reversed = false;
+            try {
+                await this.contract.createToken(99, { from: account_two });
+            } catch (e) {
+                console.log(e.reason)
+                reversed = true;
+            }
+            assert.equal(reversed, true);
 
         })
 
