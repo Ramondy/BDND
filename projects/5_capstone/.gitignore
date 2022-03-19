@@ -3,4 +3,4 @@ ref.txt
 
 .github
 node_modules
-eth-contracts/build
+eth/build
