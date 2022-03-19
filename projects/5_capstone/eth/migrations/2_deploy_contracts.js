@@ -8,3 +8,10 @@ module.exports = function(deployer) {
   // deployer.deploy(SolnSquareVerifier);
   deployer.deploy(TestERC721WIP);
 };
+
+
+// module.exports = function(deployer) {
+// 	deployer.deploy(SquareVerifier).then(() => {
+//         return deployer.deploy(SolnSquareVerifier, SquareVerifier.address);
+//     });
+// };
