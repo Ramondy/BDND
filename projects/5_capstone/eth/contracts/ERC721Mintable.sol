@@ -4,9 +4,16 @@ import 'openzeppelin-solidity/contracts/utils/Address.sol';
 import 'openzeppelin-solidity/contracts/drafts/Counters.sol';
 import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 import 'openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol';
-//import "./Oraclize.sol";
+import "./Oraclize.sol";
 
 contract Ownable {
+
+    //  TODO's
+    //  1) create a private '_owner' variable of type address with a public getter function
+    //  2) create an internal constructor that sets the _owner var to the creater of the contract
+    //  3) create an 'onlyOwner' modifier that throws if called by any account other than the owner.
+    //  4) fill out the transferOwnership function
+    //  5) create an event that emits anytime ownerShip is transfered (including in the constructor)
 
     address private _owner;
 
@@ -41,6 +48,13 @@ contract Ownable {
 }
 
 contract Pausable is Ownable {
+
+    //  TODO's: Create a Pausable contract that inherits from the Ownable contract
+    //  1) create a private '_paused' variable of type bool
+    //  2) create a public setter using the inherited onlyOwner modifier
+    //  3) create an internal constructor that sets the _paused variable to false
+    //  4) create 'whenNotPaused' & 'paused' modifier that throws in the appropriate situation
+    //  5) create a Paused & Unpaused event that emits the address that triggered the event
 
     bool private _paused;
 
@@ -480,44 +494,47 @@ contract ERC721Enumerable is ERC165, ERC721 {
     }
 }
 
-contract TestERC721WIP is ERC721Enumerable {
-
-    constructor() public {
-    }
-
-    function createToken(uint256 tokenId) onlyOwner public {
 
 
-        //tokenIdToStarInfo[_tokenId] = newStar;
-        _mint(msg.sender, tokenId);
-    }
-}
-
-
-/*
-
-contract ERC721Metadata is ERC721Enumerable, usingOraclize {
-    
-    // TODO: Create private vars for token _name, _symbol, and _baseTokenURI (string)
-
-    // TODO: create private mapping of tokenId's to token uri's called '_tokenURIs'
+contract ERC721Metadata is ERC721Enumerable, usingOraclize { // Oraclize enables the fecthing of metadata off-chain
 
     bytes4 private constant _INTERFACE_ID_ERC721_METADATA = 0x5b5e139f;
-     * 0x5b5e139f ===
+     /* 0x5b5e139f ===
      *     bytes4(keccak256('name()')) ^
      *     bytes4(keccak256('symbol()')) ^
      *     bytes4(keccak256('tokenURI(uint256)'))
+    */
 
+    // TODO: Create private vars for token _name, _symbol, and _baseTokenURI (string)
+    // TODO: create private mapping of tokenId's to token uri's called '_tokenURIs'
 
+    string private _name;
+    string private _symbol;
+    string private _baseTokenURI;
 
+    mapping(uint256 =>string) private _tokenURIs;
 
     constructor (string memory name, string memory symbol, string memory baseTokenURI) public {
         // TODO: set instance var values
+        _name = name;
+        _symbol = symbol;
+        _baseTokenURI = baseTokenURI;
 
         _registerInterface(_INTERFACE_ID_ERC721_METADATA);
     }
 
     // TODO: create external getter functions for name, symbol, and baseTokenURI
+    function name() external view returns (string memory) {
+        return _name;
+    }
+
+    function symbol() external view returns (string memory) {
+        return _symbol;
+    }
+
+    function baseTokenURI() external view returns (string memory) {
+        return _baseTokenURI;
+    }
 
     function tokenURI(uint256 tokenId) external view returns (string memory) {
         require(_exists(tokenId));
@@ -532,6 +549,11 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
         // see https://github.com/oraclize/ethereum-api/blob/master/oraclizeAPI_0.5.sol for strConcat()
     // require the token exists before setting
 
+    function _setTokenURI(uint256 tokenId) internal {
+        require(_exists(tokenId));
+        _tokenURIs[tokenId] = strConcat(_baseTokenURI, uint2str(tokenId));
+    }
+
 }
 
 //  TODO's: Create CustomERC721Token contract that inherits from the ERC721Metadata contract. You can name this contract as you please
@@ -544,6 +566,19 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
 //      -calls the superclass mint and setTokenURI functions
 
 
-*/
+contract CustomERC721Token is ERC721Metadata {
+
+    constructor(string memory _name, string memory _symbol, string memory _baseTokenURI) ERC721Metadata(_name, _symbol, _baseTokenURI) public {
+
+    }
+
+    function mint(address to, uint256 tokenId) onlyOwner public returns (bool) {
+
+        _mint(to, tokenId);
+        _setTokenURI(tokenId);
+
+        return true;
+    }
+}
 
 
