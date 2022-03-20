@@ -1,11 +1,32 @@
-pragma solidity ^0.5.6;
+//pragma solidity ^0.5.6;
+pragma experimental ABIEncoderV2;
+import './ERC721Mintable.sol';
+import './verifier.sol';
 
 // TODO define a contract call to the zokrates generated solidity contract <Verifier> or <renamedVerifier>
+contract Verifier_int {
+
+    struct Proof {
+        Pairing.G1Point a;
+        Pairing.G2Point b;
+        Pairing.G1Point c;
+    }
+
+    function verifyTx(Proof memory proof, uint[2] memory input) public view returns (bool);
+}
 
 
 
 // TODO define another contract named SolnSquareVerifier that inherits from your ERC721Mintable class
+contract SolnSquareVerifier is CustomERC721Token {
 
+    Verifier_int verifier; // used as handle for verifier functions
+
+    constructor(address verifierAddress) public
+    {
+            verifier = Verifier_int(verifierAddress);
+    }
+}
 
 
 // TODO define a solutions struct that can hold an index & an address
