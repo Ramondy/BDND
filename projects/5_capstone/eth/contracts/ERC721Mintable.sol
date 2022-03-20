@@ -568,7 +568,7 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize { // Oraclize enables
 
 contract CustomERC721Token is ERC721Metadata {
 
-    constructor(string memory _name, string memory _symbol, string memory _baseTokenURI) ERC721Metadata(_name, _symbol, _baseTokenURI) public {
+    constructor(string memory name, string memory symbol, string memory baseTokenURI) ERC721Metadata(name, symbol, baseTokenURI) public {
 
     }
 
