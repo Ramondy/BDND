@@ -64,7 +64,6 @@ contract('SolnSquareVerifier', accounts => {
                 this.contract.mintToken(accounts[0], 0, proof.a, proof.b, proof.c, inputs, {from: owner}),
                 "Solution already exists"
             );
-
         })
     })
 })

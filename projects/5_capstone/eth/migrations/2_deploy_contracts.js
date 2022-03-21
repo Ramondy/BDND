@@ -3,8 +3,8 @@ var Verifier = artifacts.require("./Verifier.sol");
 var SolnSquareVerifier = artifacts.require("./SolnSquareVerifier.sol");
 // var CustomERC721Token = artifacts.require('CustomERC721Token');
 
-const name = "test_name";
-const symbol = "test_symbol";
+const name = "yr_capstone";
+const symbol = "YRC";
 const baseTokenURI = "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/";
 
 module.exports = function(deployer) {
