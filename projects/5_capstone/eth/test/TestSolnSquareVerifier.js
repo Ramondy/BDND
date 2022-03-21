@@ -42,37 +42,28 @@ contract('SolnSquareVerifier', accounts => {
     describe('test Verifier', function () {
         beforeEach( async function () {
             this.verifier = await Verifier.new({from: accounts[0]});
+            this.contract = await SolnSquareVerifier.new(name, symbol, baseTokenURI, this.verifier.address, {from: owner});
         })
 
-        it('verification with correct proof', async function () {
+        it('fails if incorrect proof', async function () {
 
-            let contract = await SolnSquareVerifier.new(name, symbol, baseTokenURI, this.verifier.address, {from: owner});
+            await truffleAssert.reverts(
+                this.contract.mintToken(accounts[0], 0, proof.a, proof.b, proof.c, [9, 0], {from: owner}),
+                "Solution invalid"
+            );
+        })
+
+        it('a valid solution can be added - only once', async function () {
 
             await truffleAssert.passes(
-                contract.mintToken(accounts[0], 0, proof.a, proof.b, proof.c, inputs, {from: owner}),
+                this.contract.mintToken(accounts[0], 0, proof.a, proof.b, proof.c, inputs, {from: owner}),
                 "Proof not working"
             );
 
-        })
-
-        it('verification with incorrect proof', async function () {
-
-            let contract = await SolnSquareVerifier.new(name, symbol, baseTokenURI, this.verifier.address, {from: owner});
-
-            let reversed = false
-
-            try {
-
-                await contract.mintToken(accounts[0], 0, proof.a, proof.b, proof.c, [9,0], {from: owner});
-
-            } catch (e) {
-
-                console.log(e.reason)
-                reversed = true;
-
-            }
-
-            assert.equal(reversed, true, "Proof not working");
+            await truffleAssert.reverts(
+                this.contract.mintToken(accounts[0], 0, proof.a, proof.b, proof.c, inputs, {from: owner}),
+                "Solution already exists"
+            );
 
         })
     })
