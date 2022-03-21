@@ -9,9 +9,9 @@ const baseTokenURI = "https://s3-us-west-2.amazonaws.com/udacity-blockchain/caps
 
 module.exports = function(deployer) {
   deployer.deploy(Verifier)
-      // .then(() => {
-      //   return deployer.deploy(SolnSquareVerifier, name, symbol, baseTokenURI, Verifier.address);
-      // });
+      .then(() => {
+        return deployer.deploy(SolnSquareVerifier, name, symbol, baseTokenURI, Verifier.address);
+      });
 
   // deployer.deploy(CustomERC721Token, name, symbol, baseTokenURI);
 };
