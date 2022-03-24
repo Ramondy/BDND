@@ -4,4 +4,3 @@ ref.txt
 .github
 node_modules
 eth/build
-eth/migrations/3_proofs.json
