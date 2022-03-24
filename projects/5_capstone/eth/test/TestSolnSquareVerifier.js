@@ -48,7 +48,7 @@ contract('SolnSquareVerifier', accounts => {
         it('fails if incorrect proof', async function () {
 
             await truffleAssert.reverts(
-                this.contract.mintToken(accounts[0], 0, proof.a, proof.b, proof.c, [9, 0], {from: owner}),
+                this.contract.mintVerified(accounts[0], proof.a, proof.b, proof.c, [9, 0], {from: owner}),
                 "Solution invalid"
             );
         })
@@ -56,14 +56,16 @@ contract('SolnSquareVerifier', accounts => {
         it('a valid solution can be added - only once', async function () {
 
             await truffleAssert.passes(
-                this.contract.mintToken(accounts[0], 0, proof.a, proof.b, proof.c, inputs, {from: owner}),
+                this.contract.mintVerified(accounts[0], proof.a, proof.b, proof.c, inputs, {from: owner}),
                 "Proof not working"
             );
 
             await truffleAssert.reverts(
-                this.contract.mintToken(accounts[0], 0, proof.a, proof.b, proof.c, inputs, {from: owner}),
+                this.contract.mintVerified(accounts[0], proof.a, proof.b, proof.c, inputs, {from: owner}),
                 "Solution already exists"
             );
+
+            assert.equal( await this.contract.totalSupply(), 1, "total Supply incorrect");
         })
     })
 })

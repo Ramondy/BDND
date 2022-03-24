@@ -142,7 +142,7 @@ contract ERC721 is Pausable, ERC165 {
 
     bytes4 private constant _INTERFACE_ID_ERC721 = 0x80ac58cd;
 
-    constructor () public {
+    constructor () internal {
         // register the supported interfaces to conform to ERC721 via ERC165
         _registerInterface(_INTERFACE_ID_ERC721);
     }
@@ -255,7 +255,7 @@ contract ERC721 is Pausable, ERC165 {
         // TODO emit Transfer event
 
         require(to != address(0), "Invalid address");
-        require(!_exists(tokenId));
+        require(!_exists(tokenId), "Token Id already assigned");
 
         _tokenOwner[tokenId] = to;
         _ownedTokensCount[to].increment();
@@ -336,7 +336,7 @@ contract ERC721Enumerable is ERC165, ERC721 {
      * @dev Constructor function
     */
 
-    constructor () public {
+    constructor () internal {
         // register the supported interface to conform to ERC721Enumerable via ERC165
         _registerInterface(_INTERFACE_ID_ERC721_ENUMERABLE);
     }
@@ -514,7 +514,7 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize { // Oraclize enables
 
     mapping(uint256 =>string) private _tokenURIs;
 
-    constructor (string memory name, string memory symbol, string memory baseTokenURI) public {
+    constructor (string memory name, string memory symbol, string memory baseTokenURI) internal {
         // TODO: set instance var values
         _name = name;
         _symbol = symbol;

@@ -31,9 +31,9 @@ contract SolnSquareVerifier is CustomERC721Token {
     }
 
     // TODO define an array of the above struct
-    bytes32[] lsSolutions;
+    bytes32[] private _lsSolutions;
     // TODO define a mapping to store unique solutions submitted
-    mapping(bytes32 => Solution) mapSolutions;
+    mapping(bytes32 => Solution) private _mapSolutions;
 
     // TODO Create an event to emit when a solution is added
     event SolutionAdded(bytes32 solution);
@@ -44,18 +44,20 @@ contract SolnSquareVerifier is CustomERC721Token {
     }
 
     // TODO Create a function to add the solutions to the array and emit the event
-    function addSolution(bytes32 hashSolution, address owner) private {
+    function _addSolution(bytes32 hashSolution, address owner) internal returns (uint256 solutionId){
 
         Solution memory newSolution;
 
         newSolution.registered = true;
-        newSolution.index = lsSolutions.length;
+        newSolution.index = _lsSolutions.length;
         newSolution.owner = owner;
         newSolution.solution = hashSolution;
 
-        mapSolutions[hashSolution] = newSolution;
-        lsSolutions.push(hashSolution);
+        _mapSolutions[hashSolution] = newSolution;
+        _lsSolutions.push(hashSolution);
         emit SolutionAdded(hashSolution);
+
+        solutionId = newSolution.index; // token and solution will share the same index
     }
 
 
@@ -71,11 +73,11 @@ contract SolnSquareVerifier is CustomERC721Token {
     //    Execute the addSolution function to store the solution to make sure that this solution can’t be used in the future
     //    Mint the token
 
-    function mintToken(address to, uint256 tokenId, uint[2] memory a, uint[2][2] memory b, uint[2] memory c, uint[2] memory inputs) public returns (bool) {
+    function mintVerified(address to, uint256[2] memory a, uint256[2][2] memory b, uint256[2] memory c, uint256[2] memory inputs) public returns (bool) {
 
         bytes32 hashSolution = keccak256(abi.encodePacked(a, b, c, inputs));
 
-        require(mapSolutions[hashSolution].registered == false, "Solution already exists");
+        require (_mapSolutions[hashSolution].registered == false, "Solution already exists");
 
         Pairing.G1Point memory A;
         Pairing.G2Point memory B;
@@ -97,7 +99,7 @@ contract SolnSquareVerifier is CustomERC721Token {
 
         require(verifier.verifyTx(newProof, inputs) == true, "Solution invalid");
 
-        addSolution(hashSolution, msg.sender);
+        uint256 tokenId = _addSolution(hashSolution, msg.sender);
 
         super.mint(to, tokenId);
 
